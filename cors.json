@@ -1,0 +1,8 @@
+[
+  {
+    "origin": ["http://localhost:5173", "https://sharjilsiddiqui.github.io/pawthway-pet-adoption/"],
+    "method": ["GET", "PUT", "POST", "DELETE", "HEAD"],
+    "maxAgeSeconds": 3600,
+    "responseHeader": ["Content-Type", "Firebase-Storage-Resumable-Upload-Protocol", "x-firebase-storage-upload-status"]
+  }
+]

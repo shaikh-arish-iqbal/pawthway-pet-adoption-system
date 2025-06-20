@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+
+:root {
+  /* font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400; */
+
+  /* color-scheme: light dark; */
+  color: rgba(255, 255, 255, 0.87);
+  /* background-color: white; */
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  /* font-weight: 500; */
+  /* color: #646cff; */
+  text-decoration: inherit;
+}
+
+
+body {
+  margin: 0;
+  /* display: flex; */
+  /* place-items: center; */
+  /* min-width: 320px; */
+  /* min-height: 100vh; */
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: white;
+    background-color: #ffffff;
+  }
+  /* a:hover {
+    color: #747bff;
+  } */
+  /* button {
+    background-color: #f9f9f9;
+  } */
+}
+
+
+
+
+@layer base {
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Or your preferred font */
+  }
+ }
+
+ @layer utilities {
+  .bg-black { background-color: #000000; }
+  .text-black { color: #000000; }
+  .bg-off-white { background-color: #FFFFFC; }
+  .bg-beige { background-color: #BEB7A4; }
+  .text-beige { color: #BEB7A4; }
+  .bg-orange { background-color: #FF7F11; }
+  .text-orange { color: #FF7F11; }
+  .bg-red { background-color: #FF1B1C; }
+  .text-red { color: #FF1B1C; }
+  .text-beige-dark { color: #7a7568; /* A darker shade of beige for readability */ }
+ }
