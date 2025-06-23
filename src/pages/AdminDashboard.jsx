@@ -1,4 +1,4 @@
-// AdminDashboard.jsx - Add Pet Editing Functionality (Improved Flow)
+// AdminDashboard.jsx - Only allow shelter-specific pet editing
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -15,15 +15,12 @@ import {
 } from "firebase/firestore";
 import { signOut } from "firebase/auth";
 import { v4 as uuidv4 } from "uuid";
-
-// Import the ShelterInfoForm component
-import ShelterInfoForm from "./ShelterInfoForm"; // Make sure the path is correct
+import ShelterInfoForm from "./ShelterInfoForm";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [petImages, setPetImages] = useState([]);
   const [petName, setPetName] = useState("");
-  // const [description, setDescription] = "";
   const [type, setType] = useState("Cat");
   const [breed, setBreed] = useState("");
   const [personality, setPersonality] = useState("");
@@ -33,10 +30,22 @@ export default function AdminDashboard() {
   const [description, setDescription] = useState("");
 
   useEffect(() => {
+    const fetchPets = async () => {
+      const currentUser = auth.currentUser;
+      if (!currentUser) return;
+
+      try {
+        const snapshot = await getDocs(collection(db, "pets"));
+        const allPets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const userPets = allPets.filter(pet => pet.shelterId === currentUser.uid);
+        setPets(userPets);
+      } catch (e) {
+        alert("Failed to load pets: " + e.message);
+      }
+    };
+
     if (["edit", "delete", "applications"].includes(activeTab)) {
-      getDocs(collection(db, "pets"))
-        .then(snapshot => setPets(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))))
-        .catch(e => alert("Failed to load pets: " + e.message));
+      fetchPets();
     }
   }, [activeTab]);
 
@@ -93,6 +102,9 @@ export default function AdminDashboard() {
   };
 
   const handleEditClick = (pet) => {
+    if (pet.shelterId !== auth.currentUser?.uid) {
+      return alert("You are not authorized to edit this pet.");
+    }
     setEditingPet(pet);
     setPetName(pet.name);
     setDescription(pet.description);
@@ -136,10 +148,7 @@ export default function AdminDashboard() {
           <SidebarButton icon={Mail} label="Messages" onClick={() => setActiveTab("messages")} active={activeTab === "messages"} />
           <SidebarButton icon={Users} label="Users" onClick={() => setActiveTab("users")} active={activeTab === "users"} />
           <SidebarButton icon={Settings} label="Settings" onClick={() => setActiveTab("settings")} active={activeTab === "settings"} />
-
-          {/* New: Shelter Information Button under Settings */}
           <SidebarButton icon={FileText} label="Shelter Info" onClick={() => setActiveTab("shelter-info")} active={activeTab === "shelter-info"} />
-
           <SidebarButton icon={LogOut} label="Logout" onClick={handleLogout} active={false} danger />
         </nav>
       </aside>
@@ -185,14 +194,11 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* New: Render ShelterInfoForm when activeTab is 'shelter-info' */}
         {activeTab === "shelter-info" && (
           <div className="space-y-4">
-            {/* <h2 className="text-xl font-semibold text-[#000000]">Shelter Information</h2> */}
-            <ShelterInfoForm /> {/* Render the component */}
+            <ShelterInfoForm />
           </div>
         )}
-
       </main>
     </div>
   );

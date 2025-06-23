@@ -88,7 +88,7 @@ const PetCard = ({ cityFilter }) => {
           <div className="px-4 pb-4">
             <button
               onClick={() => handleAdoptClick(pet.id)}
-              className="w-full px-4 py-2 rounded bg-[#FF7F11] hover:bg-[#FF1B1C] text-white font-semibold transition-all duration-200"
+              className="w-full px-4 py-2 rounded bg-[#FF7F11] hover:bg-[#FF1B1C] text-white font-semibold transition-all duration-200 cursor-pointer"
             >
               Adopt
             </button>

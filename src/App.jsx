@@ -10,6 +10,7 @@ import PetDetail from "./pages/PetDetail";
 import Navbar from "./components/Navbar";
 import ShelterInfoForm from "./pages/ShelterInfoForm";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdoptionForm from "./components/AdoptionForm";
 
 
 
@@ -29,6 +30,7 @@ function App() {
         <Route path="/pet/:id" element={<PetDetail />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/shelter-info" element={<ShelterInfoForm />} />
+        <Route path="/adoption-form" element={<AdoptionForm />} />
       </Routes>
     </BrowserRouter>
     </>
