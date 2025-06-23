@@ -3,7 +3,8 @@ import React, { useState, useEffect } from "react";
 import { db, auth } from "../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
-import MyFooter from "../components/Footer";
+// MyFooter is commented out in your original return, so I'll keep it out of the main design focus
+// import MyFooter from "../components/Footer"; 
 
 export default function ShelterInfoForm() {
   const [shelterName, setShelterName] = useState("");
@@ -82,31 +83,29 @@ export default function ShelterInfoForm() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading shelter info...
+      <div className="flex items-center justify-center min-h-[calc(100vh-64px)] text-lg text-gray-700">
+        Loading shelter information...
       </div>
     );
   }
 
   return (
-    <div>
-      <div className="min-h-screen bg-[#FFFFFC] p-8 md:p-30">
-        <h1 className="text-3xl font-bold text-[#FF7F11] mb-6">
-          {isNewShelter
-            ? "Add Your Shelter Information"
-            : "Edit Shelter Information"}
+    // Outer container: Adjusted min-h and padding to prevent main page scroll
+    <div className="min-h-[calc(100vh-64px)] bg-[#FFFFFC] flex items-center justify-center py-8 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      {/* Form Container: Adjusted max-w to accommodate two columns */}
+      <div className="max-w-5xl w-full bg-white p-8 sm:p-10 md:p-12 rounded-xl shadow-2xl space-y-8 border border-gray-100">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-[#FF7F11] text-center mb-8">
+          {isNewShelter ? "Add Your Shelter Information" : "Edit Shelter Information"}
         </h1>
 
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white p-8 rounded-lg shadow-md space-y-6 max-w-2xl mx-auto"
-        >
-          <div>
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+          {/* Shelter Name */}
+          <div className="md:col-span-1"> {/* Ensures it takes 1 column on medium screens */}
             <label
               htmlFor="shelterName"
-              className="block text-gray-700 font-medium mb-2"
+              className="block text-lg font-semibold text-gray-800 mb-2"
             >
-              Shelter Name
+              Shelter Name <span className="text-[#FF1B1C]">*</span>
             </label>
             <input
               type="text"
@@ -114,17 +113,18 @@ export default function ShelterInfoForm() {
               value={shelterName}
               onChange={(e) => setShelterName(e.target.value)}
               placeholder="Enter your shelter's name"
-              className="w-full p-3 border border-[#BEB7A4] rounded focus:outline-none focus:ring-2 focus:ring-[#FF7F11] text-black" // ADDED text-black here
+              className="w-full p-3 border border-[#BEB7A4] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF7F11] text-black placeholder-gray-500 transition duration-200"
               required
             />
           </div>
 
-          <div>
+          {/* Location */}
+          <div className="md:col-span-1">
             <label
               htmlFor="location"
-              className="block text-gray-700 font-medium mb-2"
+              className="block text-lg font-semibold text-gray-800 mb-2"
             >
-              Location (City, State/Province, Country)
+              Location (City, State/Province, Country) <span className="text-[#FF1B1C]">*</span>
             </label>
             <input
               type="text"
@@ -132,17 +132,18 @@ export default function ShelterInfoForm() {
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               placeholder="e.g., Nagpur, Maharashtra, India"
-              className="w-full p-3 border border-[#BEB7A4] rounded focus:outline-none focus:ring-2 focus:ring-[#FF7F11] text-black" // ADDED text-black here
+              className="w-full p-3 border border-[#BEB7A4] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF7F11] text-black placeholder-gray-500 transition duration-200"
               required
             />
           </div>
 
-          <div>
+          {/* Contact Email */}
+          <div className="md:col-span-1">
             <label
               htmlFor="contactEmail"
-              className="block text-gray-700 font-medium mb-2"
+              className="block text-lg font-semibold text-gray-800 mb-2"
             >
-              Contact Email
+              Contact Email <span className="text-[#FF1B1C]">*</span>
             </label>
             <input
               type="email"
@@ -150,15 +151,16 @@ export default function ShelterInfoForm() {
               value={contactEmail}
               onChange={(e) => setContactEmail(e.target.value)}
               placeholder="shelter@example.com"
-              className="w-full p-3 border border-[#BEB7A4] rounded focus:outline-none focus:ring-2 focus:ring-[#FF7F11] text-black" // ADDED text-black here
+              className="w-full p-3 border border-[#BEB7A4] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF7F11] text-black placeholder-gray-500 transition duration-200"
               required
             />
           </div>
 
-          <div>
+          {/* Contact Phone Number */}
+          <div className="md:col-span-1">
             <label
               htmlFor="contactPhone"
-              className="block text-gray-700 font-medium mb-2"
+              className="block text-lg font-semibold text-gray-800 mb-2"
             >
               Contact Phone Number
             </label>
@@ -168,43 +170,57 @@ export default function ShelterInfoForm() {
               value={contactPhone}
               onChange={(e) => setContactPhone(e.target.value)}
               placeholder="+91 1234567890"
-              className="w-full p-3 border border-[#BEB7A4] rounded focus:outline-none focus:ring-2 focus:ring-[#FF7F11] text-black" // ADDED text-black here
+              className="w-full p-3 border border-[#BEB7A4] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF7F11] text-black placeholder-gray-500 transition duration-200"
             />
           </div>
 
-          {/* ... (Website URL commented out section remains the same) ... */}
+          {/* Website URL - Now included and styled */}
+          <div className="md:col-span-2"> {/* This field spans both columns */}
+            <label
+              htmlFor="website"
+              className="block text-lg font-semibold text-gray-800 mb-2"
+            >
+              Website URL
+            </label>
+            <input
+              type="url"
+              id="website"
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+              placeholder="https://www.yourshelter.org"
+              className="w-full p-3 border border-[#BEB7A4] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF7F11] text-black placeholder-gray-500 transition duration-200"
+            />
+          </div>
 
-          <div>
+          {/* Shelter Description */}
+          <div className="md:col-span-2"> {/* This field spans both columns */}
             <label
               htmlFor="description"
-              className="block text-gray-700 font-medium mb-2"
+              className="block text-lg font-semibold text-gray-800 mb-2"
             >
-              Shelter Description
+              Shelter Description <span className="text-[#FF1B1C]">*</span>
             </label>
             <textarea
               id="description"
-              rows="5"
+              rows="6"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Tell us about your shelter's mission, values, and what makes it special."
-              className="w-full p-3 border border-[#BEB7A4] rounded focus:outline-none focus:ring-2 focus:ring-[#FF7F11] text-black" // ADDED text-black here
+              placeholder="Tell us about your shelter's mission, values, and what makes it special. (e.g., number of animals housed, specific rescue efforts, community involvement)."
+              className="w-full p-3 border border-[#BEB7A4] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF7F11] text-black placeholder-gray-500 transition duration-200 resize-y"
               required
             ></textarea>
           </div>
 
+          {/* Submit Button - Also spans both columns */}
           <button
             type="submit"
-            className="w-full bg-[#FF7F11] hover:bg-[#FF1B1C] text-white px-6 py-3 rounded shadow-md transition font-semibold"
+            className="md:col-span-2 w-full bg-[#FF7F11] hover:bg-[#FF1B1C] text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition duration-300 font-bold text-lg transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#FF7F11] focus:ring-offset-2 cursor-pointer"
           >
             {isNewShelter
               ? "Save Shelter Information"
               : "Update Shelter Information"}
           </button>
         </form>
-      </div>
-
-      <div>
-        <MyFooter />
       </div>
     </div>
   );

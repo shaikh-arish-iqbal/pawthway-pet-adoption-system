@@ -1,469 +1,244 @@
+// AdminDashboard.jsx - Add Pet Editing Functionality (Improved Flow)
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { UploadCloud, Edit, Trash, LogOut, Users } from "lucide-react";
-import MyFooter from "../components/Footer";
-import { storage, db, auth } from "../firebaseConfig"; // Ensure 'auth' is imported
-import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
-import { collection, addDoc, getDocs, doc, deleteDoc, updateDoc } from "firebase/firestore";
+import {
+  Home, Heart, Mail, Users, Settings,
+  PlusCircle, Edit, Trash2, FileText, Grid, BarChart, LogOut
+} from "lucide-react";
+import { storage, db, auth } from "../firebaseConfig";
+import {
+  ref, uploadBytes, getDownloadURL, deleteObject
+} from "firebase/storage";
+import {
+  collection, addDoc, getDocs, doc, deleteDoc, updateDoc
+} from "firebase/firestore";
+import { signOut } from "firebase/auth";
 import { v4 as uuidv4 } from "uuid";
-import { signOut } from "firebase/auth"; // Import signOut for proper logout
+
+// Import the ShelterInfoForm component
+import ShelterInfoForm from "./ShelterInfoForm"; // Make sure the path is correct
 
 export default function AdminDashboard() {
-  const [selectedTab, setSelectedTab] = useState("add-pet"); // Main sidebar tab
-  const [innerFormTab, setInnerFormTab] = useState("info"); // <--- ADD THIS LINE! This is the missing state.
-
-  const [petImage, setPetImage] = useState(null);
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const [petImages, setPetImages] = useState([]);
   const [petName, setPetName] = useState("");
-  const [description, setDescription] = useState("");
+  // const [description, setDescription] = "";
   const [type, setType] = useState("Cat");
   const [breed, setBreed] = useState("");
   const [personality, setPersonality] = useState("");
   const [pets, setPets] = useState([]);
   const [editingPet, setEditingPet] = useState(null);
   const navigate = useNavigate();
+  const [description, setDescription] = useState("");
 
-  // Effect to fetch pets when the component mounts or when relevant tabs are selected
   useEffect(() => {
-    // Only fetch pets if the current tab requires showing the list
-    if (selectedTab === "edit-pet" || selectedTab === "remove-pet") {
-      const fetchPets = async () => {
-        try {
-          const querySnapshot = await getDocs(collection(db, "pets"));
-          const petsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          setPets(petsData);
-        } catch (error) {
-          console.error("Error fetching pets:", error);
-          alert("Failed to load pets: " + error.message);
-        }
-      };
-      fetchPets();
+    if (["edit", "delete", "applications"].includes(activeTab)) {
+      getDocs(collection(db, "pets"))
+        .then(snapshot => setPets(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))))
+        .catch(e => alert("Failed to load pets: " + e.message));
     }
-  }, [selectedTab]); // Dependency array: re-run when selectedTab changes
+  }, [activeTab]);
 
   const resetForm = () => {
-    setPetImage(null);
+    setPetImages([]);
     setPetName("");
     setDescription("");
     setType("Cat");
     setBreed("");
     setPersonality("");
-    setEditingPet(null); // Clear editing state
+    setEditingPet(null);
   };
 
   const handleLogout = async () => {
-    try {
-      await signOut(auth); // Use Firebase signOut
-      navigate("/login"); // Redirect to login page after successful logout
-    } catch (error) {
-      console.error("Error logging out:", error);
-      alert("Error logging out.");
-    }
+    await signOut(auth);
+    navigate("/login");
   };
 
   const handleAddPet = async () => {
-    try {
-      if (!petImage || !petName || !description || !breed || !personality) { // Added personality check
-        alert("Please fill all pet information fields and upload a photo.");
-        return;
-      }
-
-      // Generate a unique ID for the pet and its image
-      const petId = uuidv4();
-      const imageRef = ref(storage, `pets/${petId}-${petImage.name}`); // Unique path for the image
-      
-      console.log("Attempting to upload image to:", imageRef.fullPath);
-      console.log("File object:", petImage); // Add this
-      console.log("File name:", petImage?.name); // Add this
-      console.log("File type:", petImage?.type); // Add this
-      console.log("File size:", petImage?.size); // Add this
-      await uploadBytes(imageRef, petImage); // Upload image to Firebase Storage
-      const imageUrl = await getDownloadURL(imageRef); // Get the public URL of the uploaded image
-      console.log("Image uploaded successfully. URL:", imageUrl);
-
-      // Add pet data to Firestore
-      await addDoc(collection(db, "pets"), {
-        name: petName,
-        description,
-        type,
-        breed,
-        personality,
-        imageUrl,
-        createdAt: new Date(), // Timestamp for when the pet was added
-        // Optional: Link pet to the current shelter/admin's UID
-        shelterId: auth.currentUser ? auth.currentUser.uid : null,
-      });
-
-      alert("Pet added successfully!");
-      resetForm(); // Clear the form fields
-      setSelectedTab("add-pet"); // Keep the user on the add pet form
-    } catch (error) {
-      console.error("Error adding pet:", error);
-      alert("Error adding pet: " + error.message); // Display specific error message
+    if (petImages.length === 0 || !petName || !description || !breed || !personality) {
+      return alert("Fill all fields and select at least one image");
     }
+
+    const imageUrls = [];
+    for (const file of petImages) {
+      const imageRef = ref(storage, `pets/${uuidv4()}-${file.name}`);
+      await uploadBytes(imageRef, file);
+      const url = await getDownloadURL(imageRef);
+      imageUrls.push(url);
+    }
+
+    await addDoc(collection(db, "pets"), {
+      name: petName,
+      description, type, breed, personality,
+      imageUrls,
+      shelterId: auth.currentUser?.uid || null,
+      createdAt: new Date(),
+    });
+
+    alert("Pet added");
+    resetForm();
   };
 
-  const handleEditPet = (pet) => {
-    setEditingPet(pet); // Set the pet object to be edited
+  const handleDeletePet = async (petId, imageUrls) => {
+    await deleteDoc(doc(db, "pets", petId));
+    if (Array.isArray(imageUrls)) {
+      for (const url of imageUrls) {
+        const path = decodeURIComponent(new URL(url).pathname.split("/o/")[1]);
+        await deleteObject(ref(storage, path));
+      }
+    }
+    alert("Deleted");
+    setPets(prev => prev.filter(p => p.id !== petId));
+  };
+
+  const handleEditClick = (pet) => {
+    setEditingPet(pet);
     setPetName(pet.name);
     setDescription(pet.description);
-    setType(pet.type);
     setBreed(pet.breed);
+    setType(pet.type);
     setPersonality(pet.personality);
-    setPetImage(null); // Clear selected image; user can choose to upload new one
-    setSelectedTab("edit-pet-form"); // Switch to the dedicated edit form view
+    setPetImages([]);
   };
 
   const handleUpdatePet = async () => {
-    if (!editingPet || !petName || !description || !breed || !personality) {
-      alert("Please fill all fields for the pet.");
-      return;
-    }
-
-    try {
-      let imageUrlToSave = editingPet.imageUrl; // Start with the existing image URL
-
-      // If a new image file is selected, upload it
-      if (petImage) {
-        // Optional: Delete the old image from storage to save space.
-        // Be careful with this, especially if other documents might reference the same image.
-        // const oldImageStoragePath = new URL(editingPet.imageUrl).pathname.split('/o/')[1];
-        // const oldImageRef = ref(storage, decodeURIComponent(oldImageStoragePath));
-        // await deleteObject(oldImageRef).catch(e => console.warn("Could not delete old image:", e));
-
-        const newImageRef = ref(storage, `pets/${editingPet.id}-${petImage.name}`);
-        await uploadBytes(newImageRef, petImage);
-        imageUrlToSave = await getDownloadURL(newImageRef); // Get URL of the new image
+    if (!editingPet) return;
+    let updatedImageUrls = editingPet.imageUrls || [];
+    if (petImages.length > 0) {
+      updatedImageUrls = [];
+      for (const file of petImages) {
+        const imageRef = ref(storage, `pets/${uuidv4()}-${file.name}`);
+        await uploadBytes(imageRef, file);
+        const url = await getDownloadURL(imageRef);
+        updatedImageUrls.push(url);
       }
-
-      // Update the Firestore document
-      const petDocRef = doc(db, "pets", editingPet.id);
-      await updateDoc(petDocRef, {
-        name: petName,
-        description,
-        type,
-        breed,
-        personality,
-        imageUrl: imageUrlToSave, // Use the new URL or the original one
-      });
-
-      alert("Pet updated successfully!");
-      resetForm(); // Clear form and editing state
-      setSelectedTab("edit-pet"); // Go back to the list of pets to edit
-    } catch (error) {
-      console.error("Error updating pet:", error);
-      alert("Error updating pet: " + error.message);
     }
-  };
-
-  const handleDeletePet = async (petId, imageUrl) => {
-    if (!window.confirm("Are you sure you want to delete this pet? This action cannot be undone.")) {
-      return; // User cancelled
-    }
-
-    try {
-      // 1. Delete pet document from Firestore
-      await deleteDoc(doc(db, "pets", petId));
-      console.log("Pet document deleted from Firestore:", petId);
-
-      // 2. Delete image from Firebase Storage (if imageUrl exists)
-      if (imageUrl) {
-        // Extract the path from the full download URL
-        // Example URL: https://firebasestorage.googleapis.com/v0/b/YOUR_BUCKET.appspot.com/o/pets%2Fimage-name.jpg?alt=media...
-        // We need: pets/image-name.jpg
-        const imagePath = new URL(imageUrl).pathname.split('/o/')[1]; // Get path after /o/
-        const decodedImagePath = decodeURIComponent(imagePath); // Decode URI components like %2F to /
-        
-        const imageRef = ref(storage, decodedImagePath);
-        await deleteObject(imageRef);
-        console.log("Pet image deleted from Storage:", decodedImagePath);
-      }
-
-      alert("Pet deleted successfully!");
-      // Update local state to remove the deleted pet immediately from the list
-      setPets(pets.filter(pet => pet.id !== petId));
-    } catch (error) {
-      console.error("Error deleting pet:", error);
-      alert("Error deleting pet: " + error.message);
-    }
+    await updateDoc(doc(db, "pets", editingPet.id), {
+      name: petName,
+      description, type, breed, personality,
+      imageUrls: updatedImageUrls,
+    });
+    alert("Pet updated");
+    resetForm();
+    setActiveTab("edit");
   };
 
   return (
-    <div className="min-h-screen bg-[#FFFFFC] flex flex-col">
-      <div className="flex flex-1">
-        {/* Sidebar */}
-        <aside className="w-20 md:w-56 bg-black text-white flex flex-col items-center py-6 shadow-xl">
-          <div className="mb-10 text-center text-[#FF7F11] text-xl md:text-2xl font-bold">
-            PAWTHWAY
+    <div className="flex min-h-screen bg-[#FFFFFC]">
+      <aside className="w-64 bg-[#000000] text-white p-6 space-y-6">
+        <div className="text-2xl font-bold flex items-center space-x-3">
+          <span className="text-3xl">🐾</span><span>Pawthway</span>
+        </div>
+        <nav className="flex flex-col space-y-4">
+          <SidebarButton icon={Home} label="Dashboard" onClick={() => setActiveTab("dashboard")} active={activeTab === "dashboard"} />
+          <SidebarButton icon={Heart} label="Adoptions" onClick={() => setActiveTab("applications")} active={activeTab === "applications"} />
+          <SidebarButton icon={Mail} label="Messages" onClick={() => setActiveTab("messages")} active={activeTab === "messages"} />
+          <SidebarButton icon={Users} label="Users" onClick={() => setActiveTab("users")} active={activeTab === "users"} />
+          <SidebarButton icon={Settings} label="Settings" onClick={() => setActiveTab("settings")} active={activeTab === "settings"} />
+
+          {/* New: Shelter Information Button under Settings */}
+          <SidebarButton icon={FileText} label="Shelter Info" onClick={() => setActiveTab("shelter-info")} active={activeTab === "shelter-info"} />
+
+          <SidebarButton icon={LogOut} label="Logout" onClick={handleLogout} active={false} danger />
+        </nav>
+      </aside>
+
+      <main className="flex-1 p-30">
+        <h1 className="text-3xl font-bold text-[#000000] mb-8">Admin Dashboard</h1>
+        {activeTab === "dashboard" && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Card icon={PlusCircle} title="Add a New Pet" onClick={() => setActiveTab("add")} />
+            <Card icon={Edit} title="Edit Pet" onClick={() => setActiveTab("edit")} />
+            <Card icon={Trash2} title="Remove Pet" onClick={() => setActiveTab("delete")} />
+            <Card icon={FileText} title="View Applications" onClick={() => setActiveTab("applications")} />
+            <Card icon={Grid} title="Manage Categories" onClick={() => alert("Coming soon")} />
+            <Card icon={BarChart} title="Generate Reports" onClick={() => alert("Coming soon")} />
           </div>
-          <nav className="flex flex-col space-y-6 w-full items-center">
-            {/* Sidebar Buttons */}
-            <button
-              onClick={() => { setSelectedTab("add-pet"); resetForm(); }} // Reset form when switching to add
-              title="Add New Pet"
-              className="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-800 w-full justify-center md:justify-start cursor-pointer"
-            >
-              <UploadCloud
-                size={28}
-                stroke={selectedTab === "add-pet" ? "#FF7F11" : "#FFFFFF"}
-              />
-              <span className="hidden md:block text-sm">Add Pet</span>
-            </button>
-            <button
-              onClick={() => setSelectedTab("edit-pet")}
-              title="Edit Existing Pets"
-              className="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-800 w-full justify-center md:justify-start cursor-pointer"
-            >
-              <Edit
-                size={28}
-                stroke={selectedTab === "edit-pet" || selectedTab === "edit-pet-form" ? "#FF7F11" : "#FFFFFF"}
-              />
-              <span className="hidden md:block text-sm">Edit Pets</span>
-            </button>
-            <button
-              onClick={() => setSelectedTab("remove-pet")}
-              title="Remove Pets"
-              className="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-800 w-full justify-center md:justify-start cursor-pointer"
-            >
-              <Trash
-                size={28}
-                stroke={selectedTab === "remove-pet" ? "#FF7F11" : "#FFFFFF"}
-              />
-              <span className="hidden md:block text-sm">Remove Pets</span>
-            </button>
-            <button
-              onClick={() => navigate("/shelter-info")} // Corrected path based on App.jsx
-              title="Shelter Information"
-              className="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-800 w-full justify-center md:justify-start cursor-pointer"
-            >
-              <Users size={28} stroke="#FFFFFF" />
-              <span className="hidden md:block text-sm">Shelter Info</span>
-            </button>
-            <button
-              onClick={handleLogout}
-              title="Logout"
-              className="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-800 w-full justify-center md:justify-start cursor-pointer"
-            >
-              <LogOut size={28} stroke="#FF1B1C" />
-              <span className="hidden md:block text-sm">Logout</span>
-            </button>
-          </nav>
-        </aside>
+        )}
 
-        {/* Main Content Area */}
-        <main className="flex-1 p-8 md:p-30">
-          {/* Add Pet Form / Edit Pet Form */}
-          {(selectedTab === "add-pet" || selectedTab === "edit-pet-form") && (
-            <>
-              <h1 className="text-3xl font-bold text-[#FF7F11] mb-6">
-                {selectedTab === "add-pet" ? "Add A New Pet" : "Edit Pet Information"}
-              </h1>
+        {activeTab === "add" && renderForm("Add New Pet", handleAddPet)}
 
-              <div className="flex flex-col md:flex-row gap-6">
-                {/* Internal Form Tabs (Photos, Info, Personality) */}
-                <div className="w-full md:w-1/4 space-y-4">
-                  {[
-                    { label: "Photos", key: "photos" },
-                    { label: "Info", key: "info" },
-                    { label: "Personality", key: "personality" },
-                  ].map((tab) => (
-                    <button
-                      key={tab.key}
-                      // Note: These internal tabs switch between sections of the SAME form.
-                      // They don't change the main selectedTab for the sidebar.
-                      onClick={() => setInnerFormTab(tab.key)} // Use a new state for inner tabs
-                      className={`w-full p-3 cursor-pointer rounded font-semibold border-l-4 ${
-                        innerFormTab === tab.key
-                          ? "border-[#FF7F11] bg-[#FFF3E6] text-[#FF7F11]"
-                          : "border-transparent bg-white hover:bg-[#FFF3E6] text-[#000000]"
-                      }`}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Form Fields */}
-                <div className="w-full md:w-3/4 space-y-4">
-                  {innerFormTab === "photos" && ( // Use innerFormTab here
-                    <div className="space-y-4 border-2 border-dashed border-[#BEB7A4] rounded p-8 text-center text-[#BEB7A4]">
-                      <label className="block text-[#000000] font-medium mb-2">
-                        Upload Pet Image
-                      </label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => setPetImage(e.target.files[0])}
-                        className="text-[#000000]"
-                      />
-                      <p className="text-sm">PNG, JPG formats supported</p>
-                      {/* Display current image for editing pet if no new image selected */}
-                      {editingPet && !petImage && editingPet.imageUrl && (
-                        <div className="mt-4">
-                          <p className="text-sm text-gray-500">Current Image:</p>
-                          <img src={editingPet.imageUrl} alt="Current Pet" className="w-24 h-24 object-cover mx-auto rounded-md" />
-                          <a href={editingPet.imageUrl} target="_blank" rel="noopener noreferrer" className="text-[#FF7F11] text-sm hover:underline">View Full Size</a>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {innerFormTab === "info" && ( // Use innerFormTab here
-                    <div className="space-y-4">
-                      <label htmlFor="petName" className="block text-[#000000] font-medium">
-                        Pet Name
-                      </label>
-                      <input
-                        type="text"
-                        id="petName"
-                        placeholder="Enter pet's name"
-                        value={petName}
-                        onChange={(e) => setPetName(e.target.value)}
-                        className="w-full p-3 border border-[#BEB7A4] rounded text-[#000000]"
-                        required
-                      />
-                      <label htmlFor="description" className="block text-[#000000] font-medium mt-4">
-                        Description
-                      </label>
-                      <textarea
-                        id="description"
-                        placeholder="Enter pet's description"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        className="w-full p-3 border border-[#BEB7A4] rounded text-[#000000]"
-                        rows={4}
-                        required
-                      />
-                      <div className="flex space-x-4">
-                        <div className="w-1/2">
-                          <label htmlFor="type" className="block text-[#000000] font-medium">
-                            Type
-                          </label>
-                          <select
-                            id="type"
-                            value={type}
-                            onChange={(e) => setType(e.target.value)}
-                            className="w-full p-3 border border-[#BEB7A4] rounded text-[#000000]"
-                          >
-                            <option value="Cat">Cat</option>
-                            <option value="Dog">Dog</option>
-                            {/* Add more types if needed */}
-                          </select>
-                        </div>
-                        <div className="w-1/2">
-                          <label htmlFor="breed" className="block text-[#000000] font-medium">
-                            Breed
-                          </label>
-                          <input
-                            type="text"
-                            id="breed"
-                            placeholder="Enter breed"
-                            value={breed}
-                            onChange={(e) => setBreed(e.target.value)}
-                            className="w-full p-3 border border-[#BEB7A4] rounded text-[#000000]"
-                            required
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {innerFormTab === "personality" && ( // Use innerFormTab here
-                    <textarea
-                      rows={5}
-                      placeholder="Describe the pet's personality (e.g., energetic, shy, playful, good with kids)"
-                      value={personality}
-                      onChange={(e) => setPersonality(e.target.value)}
-                      className="w-full p-3 border border-[#BEB7A4] rounded text-[#000000]"
-                      required
-                    />
-                  )}
-
-                  {/* Action Buttons for Add/Edit Form */}
-                  <button
-                    onClick={selectedTab === "add-pet" ? handleAddPet : handleUpdatePet}
-                    className="mt-4 bg-[#FF7F11] hover:bg-[#FF1B1C] text-white px-6 py-3 rounded shadow-md transition"
-                  >
-                    {selectedTab === "add-pet" ? "Add Pet" : "Update Pet"}
-                  </button>
-                  {selectedTab === "edit-pet-form" && (
-                     <button
-                        onClick={() => { resetForm(); setSelectedTab("edit-pet"); }} // Cancel and go back to edit list
-                        className="mt-4 ml-4 bg-gray-500 hover:bg-gray-700 text-white px-6 py-3 rounded shadow-md transition"
-                      >
-                        Cancel
-                      </button>
-                  )}
-                </div>
+        {activeTab === "edit" && !editingPet && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold text-[#000000]">Select Pet to Edit</h2>
+            {pets.map((pet) => (
+              <div key={pet.id} className="flex justify-between items-center bg-white p-4 rounded shadow">
+                <div><p className="font-bold text-[#000000]">{pet.name}</p><p className="text-sm text-[#000000]">{pet.type} - {pet.breed}</p></div>
+                <button onClick={() => handleEditClick(pet)} className="bg-[#FF7F11] text-white px-3 py-1 rounded cursor-pointer">Edit</button>
               </div>
-            </>
-          )}
+            ))}
+          </div>
+        )}
 
-          {/* List for Editing Pets */}
-          {selectedTab === "edit-pet" && (
-            <>
-              <h1 className="text-3xl font-bold text-[#FF7F11] mb-6">Edit Existing Pets</h1>
-              <div className="space-y-4">
-                {pets.length === 0 ? (
-                  <p className="text-gray-600">No pets found to edit. Add some pets first!</p>
-                ) : (
-                  pets.map((pet) => (
-                    <div key={pet.id} className="flex items-center justify-between p-4 bg-white shadow rounded-lg">
-                      <div className="flex items-center">
-                        {pet.imageUrl && (
-                          <img src={pet.imageUrl} alt={pet.name} className="w-16 h-16 object-cover rounded-md mr-4" />
-                        )}
-                        <div>
-                          <h2 className="text-lg font-semibold">{pet.name}</h2>
-                          <p className="text-sm text-gray-600">{pet.type} - {pet.breed}</p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => handleEditPet(pet)}
-                        className="bg-[#FF7F11] hover:bg-[#FF1B1C] text-white px-4 py-2 rounded-md shadow-sm cursor-pointer"
-                      >
-                        Edit
-                      </button>
-                    </div>
-                  ))
-                )}
-              </div>
-            </>
-          )}
+        {activeTab === "edit" && editingPet && renderForm("Edit Pet", handleUpdatePet)}
 
-          {/* List for Removing Pets */}
-          {selectedTab === "remove-pet" && (
-            <>
-              <h1 className="text-3xl font-bold text-[#FF7F11] mb-6">Remove Pets</h1>
-              <div className="space-y-4">
-                {pets.length === 0 ? (
-                  <p className="text-gray-600">No pets found to remove.</p>
-                ) : (
-                  pets.map((pet) => (
-                    <div key={pet.id} className="flex items-center justify-between p-4 bg-white shadow rounded-lg">
-                      <div className="flex items-center">
-                        {pet.imageUrl && (
-                          <img src={pet.imageUrl} alt={pet.name} className="w-16 h-16 object-cover rounded-md mr-4" />
-                        )}
-                        <div>
-                          <h2 className="text-lg font-semibold">{pet.name}</h2>
-                          <p className="text-sm text-gray-600">{pet.type} - {pet.breed}</p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => handleDeletePet(pet.id, pet.imageUrl)}
-                        className="bg-red-600 hover:bg-red-800 text-white px-4 py-2 rounded-md shadow-sm cursor-pointer"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  ))
-                )}
+        {activeTab === "delete" && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold text-[#000000]">Remove Pets</h2>
+            {pets.map((pet) => (
+              <div key={pet.id} className="flex justify-between items-center bg-white p-4 rounded shadow">
+                <div><p className="font-bold text-[#000000]">{pet.name}</p><p className="text-sm text-[#000000]">{pet.type} - {pet.breed}</p></div>
+                <button onClick={() => handleDeletePet(pet.id, pet.imageUrls)} className="bg-[#FF1B1C] text-white px-3 py-1 rounded cursor-pointer">Delete</button>
               </div>
-            </>
-          )}
-        </main>
-      </div>
-      <MyFooter />
+            ))}
+          </div>
+        )}
+
+        {/* New: Render ShelterInfoForm when activeTab is 'shelter-info' */}
+        {activeTab === "shelter-info" && (
+          <div className="space-y-4">
+            {/* <h2 className="text-xl font-semibold text-[#000000]">Shelter Information</h2> */}
+            <ShelterInfoForm /> {/* Render the component */}
+          </div>
+        )}
+
+      </main>
     </div>
+  );
+
+  function renderForm(title, onSubmit) {
+    return (
+      <div className="space-y-4 text-[#000000]">
+        <h2 className="text-xl font-semibold">{title}</h2>
+        <label className="block text-[#000000] font-medium">Pet Images {editingPet ? "(leave empty to keep existing)" : "(multiple allowed)"}</label>
+        <input type="file" multiple onChange={(e) => setPetImages(Array.from(e.target.files))} className="cursor-pointer" />
+        <label className="block text-[#000000] font-medium">Pet Name</label>
+        <input className="block border border-[#BEB7A4] p-2 w-full text-[#000000] placeholder-[#BEB7A4]" value={petName} onChange={(e) => setPetName(e.target.value)} placeholder="e.g., Simba" />
+        <label className="block text-[#000000] font-medium">Description</label>
+        <textarea className="block border border-[#BEB7A4] p-2 w-full text-[#000000] placeholder-[#BEB7A4]" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Brief description" />
+        <label className="block text-[#000000] font-medium">Breed</label>
+        <input className="block border border-[#BEB7A4] p-2 w-full text-[#000000] placeholder-[#BEB7A4]" value={breed} onChange={(e) => setBreed(e.target.value)} placeholder="e.g., Labrador" />
+        <label className="block text-[#000000] font-medium">Personality</label>
+        <textarea className="block border border-[#BEB7A4] p-2 w-full text-[#000000] placeholder-[#BEB7A4]" value={personality} onChange={(e) => setPersonality(e.target.value)} placeholder="e.g., Friendly, playful" />
+        <button className="bg-[#FF7F11] hover:bg-[#FF1B1C] text-white px-4 py-2 rounded cursor-pointer" onClick={onSubmit}>{editingPet ? "Update" : "Add"}</button>
+        {editingPet && <button className="ml-4 px-4 py-2 rounded bg-gray-300 text-black" onClick={resetForm}>Cancel</button>}
+      </div>
+    );
+  }
+}
+
+function Card({ icon: Icon, title, onClick }) {
+  return (
+    <div onClick={onClick} className="flex flex-col items-center justify-center p-6 bg-white rounded-2xl shadow hover:shadow-md transition cursor-pointer group">
+      <div className="p-4 rounded-full mb-4">
+        <Icon size={32} className="text-[#FF7F11] group-hover:text-[#FF1B1C] transition" />
+      </div>
+      <h2 className="text-lg font-semibold text-[#1F2937] text-center">{title}</h2>
+    </div>
+  );
+}
+
+function SidebarButton({ icon: Icon, label, onClick, active, danger }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center space-x-3 px-3 py-2 rounded transition group cursor-pointer ${
+        active ? "bg-[#1A1A1A] text-[#FF7F11]" : danger ? "hover:bg-[#1A1A1A] text-[#FF1B1C]" : "hover:bg-[#1A1A1A]"
+      }`}
+    >
+      <Icon size={20} className={`transition ${active || danger ? "text-[#FF7F11] group-hover:text-[#FF1B1C]" : "text-white group-hover:text-[#FF1B1C]"}`} />
+      <span>{label}</span>
+    </button>
   );
 }

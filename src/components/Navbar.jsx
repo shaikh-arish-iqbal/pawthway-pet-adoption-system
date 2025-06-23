@@ -80,10 +80,10 @@ export default function Navbar() {
             Contact
           </Link>
 
-          {/* ✅ Dashboard link for admin */}
+          {/* ✅ Dashboard link for admin - FIXED PATH */}
           {user && isAdmin && (
             <Link
-              to="/AdminDashboard"
+              to="/admin-dashboard" // Changed to match the route in App.jsx
               className="text-[#FF7F11] font-semibold text-lg hover:underline transition transform hover:scale-110"
             >
               Dashboard
@@ -134,7 +134,7 @@ export default function Navbar() {
             Contact
           </Link>
 
-          {/* ✅ Dashboard link (mobile) */}
+          {/* ✅ Dashboard link (mobile) - Already correct */}
           {user && isAdmin && (
             <Link
               to="/admin-dashboard"

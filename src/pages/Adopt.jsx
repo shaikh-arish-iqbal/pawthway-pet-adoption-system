@@ -1,49 +1,51 @@
 import React, { useEffect, useState } from "react";
-import { db } from "../firebaseConfig"; // make sure firebase is initialized
+import { db } from "../firebaseConfig";
 import { collection, getDocs } from "firebase/firestore";
 import Navbar from "../components/Navbar";
 import MyFooter from "../components/Footer";
+import PetCard from "../components/PetCard";
+import PetFilter from "../components/PetFilter";
 
 export default function Adopt() {
-
-  const [pets, setPets] = useState([]); 
+  const [pets, setPets] = useState([]);
+  const [filters, setFilters] = useState({});
 
   useEffect(() => {
     const fetchPets = async () => {
       const querySnapshot = await getDocs(collection(db, "pets"));
-      const petList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const petList = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
       setPets(petList);
     };
     fetchPets();
   }, []);
 
+  const filteredPets = pets.filter((pet) => {
+    return (
+      (!filters.city || pet.location === filters.city) &&
+      (!filters.type || pet.type === filters.type) &&
+      (!filters.breed || pet.breed === filters.breed)
+    );
+  });
+
   return (
     <div>
-      {/* <div>
-        <Navbar />
-      </div> */}
-      
+      {/* Optional Navbar */}
+      {/* <Navbar /> */}
 
-      
-      <h2 className="text-3xl font-bold mb-6 text-[#FF7F11]">Available Pets</h2>
-      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-        {pets.map(pet => (
-          <div key={pet.id} className="bg-white p-5 rounded-lg shadow-lg">
-            <img src={pet.imageURL} alt={pet.name} className="h-48 w-full object-cover rounded-lg mb-4" />
-            <h3 className="text-xl font-bold text-[#FF7F11]">{pet.name}</h3>
-            <p><strong>Type:</strong> {pet.type}</p>
-            <p><strong>Breed:</strong> {pet.breed}</p>
-            <p><strong>Age:</strong> {pet.age}</p>
-            <p><strong>Location:</strong> {pet.location}</p>
-          </div>
-        ))}
+      <div className="min-h-screen bg-gray-50 py-30 px-6">
+        <h1 className="text-3xl font-bold text-center mb-6 text-[#FF7F11]">Available Pets</h1>
+
+        {/* Filter Component */}
+        <PetFilter pets={pets} onFilterChange={setFilters} />
+
+        {/* Pet Cards with Filtered Data */}
+        <PetCard pets={filteredPets} />
       </div>
-    
 
-
-      <div>
-        <MyFooter />
-      </div>
+      <MyFooter />
     </div>
   );
 }
