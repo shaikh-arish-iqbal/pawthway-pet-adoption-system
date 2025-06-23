@@ -1,70 +1,143 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { db } from "../firebaseConfig"; // adjust path if needed
+import { collection, addDoc, Timestamp } from "firebase/firestore";
+import Navbar from "../components/Navbar";
 import MyFooter from "../components/Footer";
 
 export default function Contact() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    subject: "",
+    message: "",
+  });
+
+  const [successMsg, setSuccessMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      await addDoc(collection(db, "contacts"), {
+        ...formData,
+        createdAt: Timestamp.now(),
+      });
+      setSuccessMsg("Message sent successfully!");
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        subject: "",
+        message: "",
+      });
+      setTimeout(() => setSuccessMsg(""), 4000);
+    } catch (error) {
+      setErrorMsg("Failed to send message. Try again.");
+      console.error("Error adding contact: ", error);
+      setTimeout(() => setErrorMsg(""), 4000);
+    }
+  };
+
   return (
     <div className="bg-[#FFFFFC] min-h-screen flex flex-col justify-between">
-      {/* Navbar */}
+      <Navbar />
 
-      {/* Main Contact Section */}
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="flex flex-col items-center text-center px-6 pt-35"
+        className="flex flex-col items-center text-center px-6 pt-30"
       >
         <h1 className="text-4xl font-bold text-[#000000] mb-2">Contact Us</h1>
         <p className="text-[#BEB7A4] max-w-xl">
-          We’d love to hear from you! Whether you have a question about
-          adoption, partnership, or just want to say hello, fill out the form
-          below.
+          We'd love to hear from you! Whether you're looking to adopt or have a question, drop us a message.
         </p>
 
-        {/* Contact Form */}
         <motion.form
+          onSubmit={handleSubmit}
           whileHover={{ scale: 1.01 }}
           className="bg-white shadow-lg rounded-2xl p-8 mt-8 w-full max-w-xl border border-[#BEB7A4]"
         >
           <div className="flex flex-col gap-4">
             <input
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
               type="text"
               placeholder="Your Name"
-              className="p-3 border border-[#BEB7A4] rounded-lg placeholder-[#BEB7A4] text-[#000000] focus:outline-none focus:ring-2 focus:ring-[#FF7F11]"
+              className="p-3 border border-[#BEB7A4] rounded-lg placeholder-[#BEB7A4] text-[#000000] focus:ring-2 focus:ring-[#FF7F11]"
+              required
             />
+
             <input
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
               type="email"
               placeholder="Your Email"
-              className="p-3 border border-[#BEB7A4] rounded-lg placeholder-[#BEB7A4] text-[#000000] focus:outline-none focus:ring-2 focus:ring-[#FF7F11]"
+              className="p-3 border border-[#BEB7A4] rounded-lg placeholder-[#BEB7A4] text-[#000000] focus:ring-2 focus:ring-[#FF7F11]"
+              required
             />
+
+            <input
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              type="tel"
+              placeholder="+91 9876543210"
+              pattern="^\+?[0-9\s\-]{10,15}$"
+              title="Enter a valid phone number starting with + and country code"
+              className="p-3 border border-[#BEB7A4] rounded-lg placeholder-[#BEB7A4] text-[#000000] focus:ring-2 focus:ring-[#FF7F11]"
+              required
+            />
+
             <select
-              className="p-3 border border-[#BEB7A4] rounded-lg text-[#000000] focus:outline-none focus:ring-2 focus:ring-[#FF7F11]"
+              name="subject"
+              value={formData.subject}
+              onChange={handleChange}
+              className="p-3 border border-[#BEB7A4] rounded-lg text-[#000000] focus:ring-2 focus:ring-[#FF7F11]"
+              required
             >
-              <option>Choose Subject</option>
+              <option value="">Choose Subject</option>
               <option>Adoption Inquiry</option>
               <option>Shelter Partnership</option>
               <option>Feedback</option>
               <option>Other</option>
             </select>
+
             <textarea
+              name="message"
+              value={formData.message}
+              onChange={handleChange}
               rows="4"
               placeholder="Your Message"
-              className="p-3 border border-[#BEB7A4] rounded-lg placeholder-[#BEB7A4] text-[#000000] focus:outline-none focus:ring-2 focus:ring-[#FF7F11]"
+              className="p-3 border border-[#BEB7A4] rounded-lg placeholder-[#BEB7A4] text-[#000000] focus:ring-2 focus:ring-[#FF7F11]"
+              required
             ></textarea>
+
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
-              className="bg-[#FF7F11] text-white font-bold py-3 rounded-lg transition-all duration-200 hover:bg-[#FF1B1C] cursor-pointer"
               type="submit"
+              className="bg-[#FF7F11] text-white font-bold py-3 rounded-lg hover:bg-[#FF1B1C] transition-all duration-200 cursor-pointer"
             >
               Send Message
             </motion.button>
+
+            {successMsg && <p className="text-green-600 mt-2">{successMsg}</p>}
+            {errorMsg && <p className="text-red-600 mt-2">{errorMsg}</p>}
           </div>
         </motion.form>
 
-        {/* Call-to-action for shelters */}
-        <div className="mt-10 text-[#000000] mb-10">
+        <div className="mt-10 mb-10 text-[#000000]">
           <p className="mb-2">Are you a shelter or NGO?</p>
           <Link
             to="/register-shelter"
@@ -75,7 +148,6 @@ export default function Contact() {
         </div>
       </motion.div>
 
-      {/* Footer */}
       <MyFooter />
     </div>
   );
