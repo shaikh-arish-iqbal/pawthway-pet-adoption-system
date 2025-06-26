@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaFacebookF, FaInstagram, FaTwitter, FaEnvelope } from "react-icons/fa";
 
@@ -25,10 +26,10 @@ export default function Footer() {
         <div>
           <h3 className="text-lg font-semibold text-[#FF1B1C] mb-4">Quick Links</h3>
           <ul className="space-y-2 text-[#FFFFFC]">
-            <li><a href="/pages/Adopt" className="hover:text-[#FF7F11] transition">Adopt</a></li>
-            <li><a href="#about" className="hover:text-[#FF7F11] transition">About Us</a></li>
-            <li><a href="#contact" className="hover:text-[#FF7F11] transition">Contact</a></li>
-            <li><a href="#faq" className="hover:text-[#FF7F11] transition">FAQ</a></li>
+            <li><Link to="/adopt" className="hover:text-[#FF7F11] transition">Adopt</Link></li>
+            <li><Link to="/about" className="hover:text-[#FF7F11] transition">About Us</Link></li>
+            <li><Link to="/contact" className="hover:text-[#FF7F11] transition">Contact</Link></li>
+            <li><Link to="/faq" className="hover:text-[#FF7F11] transition text-[#FFFFFC]">FAQ</Link></li>
           </ul>
         </div>
 

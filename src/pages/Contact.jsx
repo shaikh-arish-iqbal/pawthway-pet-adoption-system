@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { db } from "../firebaseConfig"; // adjust path if needed
+import { db } from "../firebaseConfig"; 
 import { collection, addDoc, Timestamp } from "firebase/firestore";
 import Navbar from "../components/Navbar";
 import MyFooter from "../components/Footer";
@@ -48,7 +48,6 @@ export default function Contact() {
 
   return (
     <div className="bg-[#FFFFFC] min-h-screen flex flex-col justify-between">
-      <Navbar />
 
       <motion.div
         initial={{ opacity: 0, y: 40 }}

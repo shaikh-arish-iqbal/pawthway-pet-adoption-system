@@ -11,6 +11,7 @@ import Navbar from "./components/Navbar";
 import ShelterInfoForm from "./pages/ShelterInfoForm";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdoptionForm from "./components/AdoptionForm";
+import FAQPage from "./pages/FAQPage";
 
 
 
@@ -31,6 +32,7 @@ function App() {
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/shelter-info" element={<ShelterInfoForm />} />
         <Route path="/adoption-form" element={<AdoptionForm />} />
+        <Route path="/faq" element={<FAQPage />} />
       </Routes>
     </BrowserRouter>
     </>
