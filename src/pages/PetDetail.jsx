@@ -84,7 +84,7 @@ const PetDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#FFFFFC] via-[#f8f7f4] to-[#BEB7A4] flex items-center justify-center">
+      <div className="h-screen bg-gradient-to-br from-[#FFFFFC] via-[#f8f7f4] to-[#BEB7A4] flex items-center justify-center">
         <div className="text-center">
           <motion.div
             animate={{ rotate: 360 }}
@@ -99,7 +99,7 @@ const PetDetail = () => {
 
   if (!pet) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#FFFFFC] via-[#f8f7f4] to-[#BEB7A4] flex items-center justify-center">
+      <div className="h-screen bg-gradient-to-br from-[#FFFFFC] via-[#f8f7f4] to-[#BEB7A4] flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-6">😿</div>
           <h2 className="text-2xl font-bold text-[#FF1B1C] mb-4">
@@ -122,14 +122,14 @@ const PetDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#FFFFFC] via-[#f8f7f4] to-[#BEB7A4]">
+    <div className="h-screen bg-gradient-to-br from-[#FFFFFC] via-[#f8f7f4] to-[#BEB7A4] flex flex-col">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white/80 backdrop-blur-sm border-b border-[#BEB7A4]/20 sticky top-0 z-10"
+        className="bg-white/80 backdrop-blur-sm border-b border-[#BEB7A4]/20 flex-shrink-0"
       >
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="max-w-7xl mx-auto px-6 py-3">
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -154,200 +154,203 @@ const PetDetail = () => {
         </div>
       </motion.div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-12">
+      {/* Main Content - Single Page Card */}
+      <div className="flex-1 flex items-center justify-center p-6">
         <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8 }}
-          className="bg-white rounded-3xl shadow-2xl overflow-hidden"
+          className="bg-white rounded-3xl shadow-2xl overflow-hidden w-full max-w-6xl h-[85vh] flex flex-col lg:flex-row"
         >
-          <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[600px]">
-            {/* Left Side - Images */}
-            <div className="relative bg-gray-100">
-              {imageUrls.length > 0 ? (
-                <div className="relative h-full">
-                  {/* Main Image */}
-                  <AnimatePresence mode="wait">
-                    <motion.img
-                      key={currentImageIndex}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.5 }}
-                      src={imageUrls[currentImageIndex]}
-                      alt={`${pet.name} - Image ${currentImageIndex + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </AnimatePresence>
+          {/* Left Side - Image Section */}
+          <div className="lg:w-1/2 h-64 lg:h-full relative bg-gray-100">
+            {imageUrls.length > 0 ? (
+              <div className="relative h-full">
+                {/* Main Image */}
+                <AnimatePresence mode="wait">
+                  <motion.img
+                    key={currentImageIndex}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                    src={imageUrls[currentImageIndex]}
+                    alt={`${pet.name} - Image ${currentImageIndex + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </AnimatePresence>
 
-                  {/* Image Navigation */}
-                  {imageUrls.length > 1 && (
-                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-                      {imageUrls.map((_, index) => (
-                        <motion.button
-                          key={index}
-                          whileHover={{ scale: 1.2 }}
-                          onClick={() => setCurrentImageIndex(index)}
-                          className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                            index === currentImageIndex
-                              ? "bg-white scale-125"
-                              : "bg-white/50"
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Pet Type Badge */}
-                  <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 text-sm font-semibold text-[#FF1B1C] flex items-center gap-2">
-                    <span className="text-lg">{getPetTypeIcon(pet.type)}</span>
-                    <span>{pet.type || "Pet"}</span>
+                {/* Image Navigation */}
+                {imageUrls.length > 1 && (
+                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                    {imageUrls.map((_, index) => (
+                      <motion.button
+                        key={index}
+                        whileHover={{ scale: 1.2 }}
+                        onClick={() => setCurrentImageIndex(index)}
+                        className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                          index === currentImageIndex
+                            ? "bg-white scale-125"
+                            : "bg-white/50"
+                        }`}
+                      />
+                    ))}
                   </div>
-
-                  {/* Location Badge */}
-                  {pet.city && (
-                    <div className="absolute top-4 right-4 bg-[#FF7F11]/90 backdrop-blur-sm text-white rounded-full px-4 py-2 text-sm font-semibold">
-                      📍 {pet.city}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="flex items-center justify-center h-full bg-gradient-to-br from-[#FF7F11]/10 to-[#FF1B1C]/10">
-                  <div className="text-center">
-                    <div className="text-8xl mb-4">🐾</div>
-                    <p className="text-[#7a7568]">No images available</p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Right Side - Details */}
-            <div className="p-8 lg:p-12 flex flex-col justify-between">
-              <div>
-                {/* Header */}
-                <motion.div
-                  initial={{ opacity: 0, x: 30 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.8, delay: 0.2 }}
-                  className="mb-8"
-                >
-                  <h1 className="text-4xl lg:text-5xl font-black text-[#FF1B1C] mb-4">
-                    {pet.name || "Unnamed Pet"}
-                  </h1>
-                  <div className="flex items-center gap-4 text-[#7a7568] mb-6">
-                    <span className="text-lg">
-                      {pet.breed || "Mixed Breed"}
-                    </span>
-                    {pet.age && (
-                      <>
-                        <span>•</span>
-                        <span className="text-lg">{getAgeText(pet.age)}</span>
-                      </>
-                    )}
-                  </div>
-                </motion.div>
-
-                {/* Key Details */}
-                <motion.div
-                  initial={{ opacity: 0, x: 30 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.8, delay: 0.4 }}
-                  className="grid grid-cols-2 gap-6 mb-8"
-                >
-                  {pet.gender && (
-                    <div className="bg-[#FFFFFC] rounded-xl p-4 border border-[#BEB7A4]/20">
-                      <div className="text-sm text-[#7a7568] mb-1">Gender</div>
-                      <div className="font-semibold text-[#FF1B1C]">
-                        {pet.gender}
-                      </div>
-                    </div>
-                  )}
-                  {pet.size && (
-                    <div className="bg-[#FFFFFC] rounded-xl p-4 border border-[#BEB7A4]/20">
-                      <div className="text-sm text-[#7a7568] mb-1">Size</div>
-                      <div className="font-semibold text-[#FF1B1C]">
-                        {pet.size}
-                      </div>
-                    </div>
-                  )}
-                  {pet.color && (
-                    <div className="bg-[#FFFFFC] rounded-xl p-4 border border-[#BEB7A4]/20">
-                      <div className="text-sm text-[#7a7568] mb-1">Color</div>
-                      <div className="font-semibold text-[#FF1B1C]">
-                        {pet.color}
-                      </div>
-                    </div>
-                  )}
-                  {pet.weight && (
-                    <div className="bg-[#FFFFFC] rounded-xl p-4 border border-[#BEB7A4]/20">
-                      <div className="text-sm text-[#7a7568] mb-1">Weight</div>
-                      <div className="font-semibold text-[#FF1B1C]">
-                        {pet.weight}
-                      </div>
-                    </div>
-                  )}
-                </motion.div>
-
-                {/* Description */}
-                {pet.description && (
-                  <motion.div
-                    initial={{ opacity: 0, x: 30 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.8, delay: 0.6 }}
-                    className="mb-8"
-                  >
-                    <h3 className="text-xl font-bold text-[#FF1B1C] mb-4">
-                      About {pet.name}
-                    </h3>
-                    <p className="text-[#7a7568] leading-relaxed text-lg">
-                      {pet.description}
-                    </p>
-                  </motion.div>
                 )}
 
-                {/* Tags */}
-                {pet.tags && pet.tags.length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, x: 30 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.8, delay: 0.8 }}
-                    className="mb-8"
-                  >
-                    <h3 className="text-xl font-bold text-[#FF1B1C] mb-4">
-                      Characteristics
-                    </h3>
-                    <div className="flex flex-wrap gap-3">
-                      {pet.tags.map((tag, idx) => (
-                        <span
-                          key={idx}
-                          className="bg-gradient-to-r from-[#FF7F11]/20 to-[#FF1B1C]/20 text-[#FF1B1C] px-4 py-2 rounded-full font-semibold border border-[#FF7F11]/30"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </motion.div>
+                {/* Pet Type Badge */}
+                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1.5 text-sm font-semibold text-[#FF1B1C] flex items-center gap-2">
+                  <span className="text-base">{getPetTypeIcon(pet.type)}</span>
+                  <span>{pet.type || "Pet"}</span>
+                </div>
+
+                {/* Location Badge */}
+                {pet.city && (
+                  <div className="absolute top-4 right-4 bg-[#FF7F11]/90 backdrop-blur-sm text-white rounded-full px-3 py-1.5 text-sm font-semibold">
+                    📍 {pet.city}
+                  </div>
                 )}
               </div>
+            ) : (
+              <div className="flex items-center justify-center h-full bg-gradient-to-br from-[#FF7F11]/10 to-[#FF1B1C]/10">
+                <div className="text-center">
+                  <div className="text-6xl mb-3">🐾</div>
+                  <p className="text-[#7a7568] text-sm">No images available</p>
+                </div>
+              </div>
+            )}
+          </div>
 
-              {/* Action Buttons */}
+          {/* Right Side - Details Section */}
+          <div className="lg:w-1/2 flex flex-col h-96 lg:h-full overflow-hidden">
+            <div className="flex-1 overflow-y-auto p-6 lg:p-8">
+              {/* Header */}
               <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 1 }}
-                className="space-y-4"
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="mb-6"
               >
+                <h1 className="text-3xl lg:text-4xl font-black text-[#FF1B1C] mb-3">
+                  {pet.name || "Unnamed Pet"}
+                </h1>
+                <div className="flex items-center gap-4 text-[#7a7568] mb-4">
+                  <span className="text-base">
+                    {pet.breed || "Mixed Breed"}
+                  </span>
+                  {pet.age && (
+                    <>
+                      <span>•</span>
+                      <span className="text-base">{getAgeText(pet.age)}</span>
+                    </>
+                  )}
+                </div>
+              </motion.div>
+
+              {/* Key Details Grid */}
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+                className="grid grid-cols-2 gap-4 mb-6"
+              >
+                <div className="bg-[#FFFFFC] rounded-xl p-3 border border-[#BEB7A4]/20">
+                  <div className="text-xs text-[#7a7568] mb-1">Gender</div>
+                  <div className="font-semibold text-[#FF1B1C] text-sm">
+                    {pet.gender || "Not specified"}
+                  </div>
+                </div>
+                <div className="bg-[#FFFFFC] rounded-xl p-3 border border-[#BEB7A4]/20">
+                  <div className="text-xs text-[#7a7568] mb-1">Size</div>
+                  <div className="font-semibold text-[#FF1B1C] text-sm">
+                    {pet.size || "Not specified"}
+                  </div>
+                </div>
+                <div className="bg-[#FFFFFC] rounded-xl p-3 border border-[#BEB7A4]/20">
+                  <div className="text-xs text-[#7a7568] mb-1">Color</div>
+                  <div className="font-semibold text-[#FF1B1C] text-sm">
+                    {pet.color || "Not specified"}
+                  </div>
+                </div>
+                <div className="bg-[#FFFFFC] rounded-xl p-3 border border-[#BEB7A4]/20">
+                  <div className="text-xs text-[#7a7568] mb-1">Weight</div>
+                  <div className="font-semibold text-[#FF1B1C] text-sm">
+                    {pet.weight || "Not specified"}
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Description */}
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.6 }}
+                className="mb-6"
+              >
+                <h3 className="text-lg font-bold text-[#FF1B1C] mb-3">
+                  About {pet.name || "This Pet"}
+                </h3>
+                <p className="text-[#7a7568] leading-relaxed text-sm">
+                  {pet.description ||
+                    "This adorable pet is looking for a loving home. They are friendly, well-behaved, and ready to become part of your family. Contact us to learn more about their personality and needs."}
+                </p>
+              </motion.div>
+
+              {/* Tags */}
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.8 }}
+                className="mb-6"
+              >
+                <h3 className="text-lg font-bold text-[#FF1B1C] mb-3">
+                  Characteristics
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {pet.tags && pet.tags.length > 0 ? (
+                    pet.tags.map((tag, idx) => (
+                      <span
+                        key={idx}
+                        className="bg-gradient-to-r from-[#FF7F11]/20 to-[#FF1B1C]/20 text-[#FF1B1C] px-3 py-1.5 rounded-full font-semibold border border-[#FF7F11]/30 text-xs"
+                      >
+                        {tag}
+                      </span>
+                    ))
+                  ) : (
+                    <>
+                      <span className="bg-gradient-to-r from-[#FF7F11]/20 to-[#FF1B1C]/20 text-[#FF1B1C] px-3 py-1.5 rounded-full font-semibold border border-[#FF7F11]/30 text-xs">
+                        Friendly
+                      </span>
+                      <span className="bg-gradient-to-r from-[#FF7F11]/20 to-[#FF1B1C]/20 text-[#FF1B1C] px-3 py-1.5 rounded-full font-semibold border border-[#FF7F11]/30 text-xs">
+                        Playful
+                      </span>
+                      <span className="bg-gradient-to-r from-[#FF7F11]/20 to-[#FF1B1C]/20 text-[#FF1B1C] px-3 py-1.5 rounded-full font-semibold border border-[#FF7F11]/30 text-xs">
+                        Loving
+                      </span>
+                    </>
+                  )}
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Action Buttons - Fixed at bottom */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 1 }}
+              className="p-6 lg:p-8 border-t border-[#BEB7A4]/20 bg-white flex-shrink-0"
+            >
+              <div className="space-y-3">
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleAdoptClick}
-                  className="w-full bg-gradient-to-r from-[#FF7F11] to-[#FF1B1C] text-white py-4 rounded-xl font-bold text-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-3"
+                  className="w-full bg-gradient-to-r from-[#FF7F11] to-[#FF1B1C] text-white py-3 rounded-xl font-bold text-base hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
                 >
                   <span>Adopt {pet.name || "This Pet"}</span>
                   <motion.svg
-                    className="w-6 h-6"
-                    animate={{ x: [0, 5, 0] }}
+                    className="w-5 h-5"
+                    animate={{ x: [0, 3, 0] }}
                     transition={{ duration: 1.5, repeat: Infinity }}
                     fill="none"
                     stroke="currentColor"
@@ -366,17 +369,15 @@ const PetDetail = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => navigate("/Contact")}
-                  className="w-full bg-white text-[#FF1B1C] border-2 border-[#FF1B1C] py-4 rounded-xl font-bold text-lg hover:bg-[#FF1B1C] hover:text-white transition-all duration-300"
+                  className="w-full bg-white text-[#FF1B1C] border-2 border-[#FF1B1C] py-3 rounded-xl font-bold text-base hover:bg-[#FF1B1C] hover:text-white transition-all duration-300"
                 >
                   Contact About This Pet
                 </motion.button>
-              </motion.div>
-            </div>
+              </div>
+            </motion.div>
           </div>
         </motion.div>
       </div>
-
-      <MyFooter />
     </div>
   );
 };

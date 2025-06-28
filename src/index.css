@@ -51,6 +51,22 @@ h1 {
   } */
 }
 
+/* Navbar spacing fix */
+body {
+  padding-top: 0;
+}
+
+/* Ensure content starts after navbar */
+main, .main-content, #root > div:not(header) {
+  padding-top: 80px; /* Adjust based on navbar height */
+}
+
+/* For pages that need full height without padding */
+.full-height-page {
+  padding-top: 0 !important;
+  min-height: 100vh;
+}
+
 /* Dark Theme Styles */
 body.dark-theme {
   background-color: #000000;
