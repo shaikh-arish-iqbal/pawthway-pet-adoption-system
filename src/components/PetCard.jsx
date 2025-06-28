@@ -1,100 +1,261 @@
 import React, { useEffect, useState } from "react";
-import { db, auth, storage } from "../firebaseConfig";
+import { motion, AnimatePresence } from "framer-motion";
+import { db, storage } from "../firebaseConfig";
 import { collection, getDocs } from "firebase/firestore";
 import { getDownloadURL, ref } from "firebase/storage";
 import { useNavigate } from "react-router-dom";
 
-const PetCard = ({ cityFilter }) => {
+const PetCard = ({ pets: propPets, cityFilter }) => {
   const [pets, setPets] = useState([]);
-  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [hoveredPet, setHoveredPet] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPets = async () => {
-      const petCollection = collection(db, "pets");
-      const petSnapshot = await getDocs(petCollection);
-      const petList = await Promise.all(
-        petSnapshot.docs.map(async (doc) => {
-          const petData = doc.data();
+      try {
+        setLoading(true);
+        let petList = [];
 
-          const imageUrls = await Promise.all(
-            (petData.imageUrls || []).map(async (path) => {
-              try {
-                const imgRef = ref(storage, path);
-                return await getDownloadURL(imgRef);
-              } catch {
-                return null;
-              }
+        if (propPets) {
+          // Use props if provided
+          petList = propPets;
+        } else {
+          // Fetch from Firebase if no props
+          const petCollection = collection(db, "pets");
+          const petSnapshot = await getDocs(petCollection);
+          petList = await Promise.all(
+            petSnapshot.docs.map(async (doc) => {
+              const petData = doc.data();
+
+              const imageUrls = await Promise.all(
+                (petData.imageUrls || []).map(async (path) => {
+                  try {
+                    const imgRef = ref(storage, path);
+                    return await getDownloadURL(imgRef);
+                  } catch {
+                    return null;
+                  }
+                })
+              );
+
+              return {
+                id: doc.id,
+                ...petData,
+                imageUrls: imageUrls.filter(Boolean),
+              };
             })
           );
+        }
 
-          return {
-            id: doc.id,
-            ...petData,
-            imageUrls: imageUrls.filter(Boolean),
-          };
-        })
-      );
-
-      setPets(petList);
+        setPets(petList);
+      } catch (error) {
+        console.error("Error fetching pets:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      setUser(user);
-    });
-
     fetchPets();
-    return () => unsubscribe();
-  }, []);
+  }, [propPets]);
 
   const handleAdoptClick = (petId) => {
     navigate(`/pet/${petId}`);
   };
 
+  const getPetTypeIcon = (type) => {
+    switch (type?.toLowerCase()) {
+      case "dog":
+        return "🐕";
+      case "cat":
+        return "🐱";
+      case "rabbit":
+        return "🐰";
+      case "bird":
+        return "🐦";
+      case "hamster":
+        return "🐹";
+      default:
+        return "🐾";
+    }
+  };
+
+  const getAgeText = (age) => {
+    if (!age) return "Unknown";
+    if (age.includes("month")) return age;
+    if (age.includes("year")) return age;
+    return `${age} old`;
+  };
+
   const filteredPets = cityFilter
-    ? pets.filter(
-        (pet) => pet.city?.toLowerCase() === cityFilter.toLowerCase()
-      )
+    ? pets.filter((pet) => pet.city?.toLowerCase() === cityFilter.toLowerCase())
     : pets;
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-16 h-16 border-4 border-[#FF7F11] border-t-transparent rounded-full"
+        />
+      </div>
+    );
+  }
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 p-6 bg-[#FFFFFC]">
-      {filteredPets.map((pet) => (
-        <div
-          key={pet.id}
-          className="max-w-xs w-full h-[23rem] bg-white border border-[#BEB7A4] rounded-xl shadow hover:shadow-lg transition duration-300 flex flex-col"
-        >
-          {/* Image */}
-          <div className="w-full h-48 bg-[#F1F1F1]">
-            <img
-              src={pet.imageUrls?.[0] || "https://via.placeholder.com/150"}
-              alt={pet.name}
-              className="object-cover w-full h-full rounded-t-xl"
-            />
-          </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+      <AnimatePresence>
+        {filteredPets.map((pet, index) => (
+          <motion.div
+            key={pet.id}
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -50, scale: 0.9 }}
+            transition={{
+              duration: 0.5,
+              delay: index * 0.1,
+              type: "spring",
+              stiffness: 100,
+            }}
+            whileHover={{
+              y: -10,
+              scale: 1.02,
+              transition: { duration: 0.2 },
+            }}
+            onHoverStart={() => setHoveredPet(pet.id)}
+            onHoverEnd={() => setHoveredPet(null)}
+            className="group cursor-pointer"
+          >
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 group-hover:shadow-2xl border border-gray-100">
+              {/* Image Container */}
+              <div className="relative overflow-hidden h-64">
+                <motion.img
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ duration: 0.3 }}
+                  src={
+                    pet.imageUrls?.[0] ||
+                    "https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=400&h=300&fit=crop"
+                  }
+                  alt={pet.name}
+                  className="w-full h-full object-cover"
+                />
 
-          {/* Details */}
-          <div className="px-4 py-3 flex-1">
-            <h3 className="text-[#000000] text-lg font-bold truncate">{pet.name}</h3>
-            <p className="text-[#000000] text-sm">
-              Breed: {pet.breed || "Unknown"}
-            </p>
-            <p className="text-[#000000] text-sm">
-              📍 {pet.city || "Unknown City"}
-            </p>
-          </div>
+                {/* Overlay with pet info */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: hoveredPet === pet.id ? 1 : 0 }}
+                  className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"
+                />
 
-          {/* Button */}
-          <div className="px-4 pb-4">
-            <button
-              onClick={() => handleAdoptClick(pet.id)}
-              className="w-full px-4 py-2 rounded bg-[#FF7F11] hover:bg-[#FF1B1C] text-white font-semibold transition-all duration-200 cursor-pointer"
-            >
-              Adopt
-            </button>
-          </div>
-        </div>
-      ))}
+                {/* Pet type badge */}
+                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 text-sm font-semibold text-[#FF1B1C] flex items-center gap-1">
+                  <span>{getPetTypeIcon(pet.type)}</span>
+                  <span>{pet.type || "Pet"}</span>
+                </div>
+
+                {/* Location badge */}
+                {pet.city && (
+                  <div className="absolute top-4 right-4 bg-[#FF7F11]/90 backdrop-blur-sm text-white rounded-full px-3 py-1 text-sm font-semibold">
+                    📍 {pet.city}
+                  </div>
+                )}
+
+                {/* Hover overlay content */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{
+                    opacity: hoveredPet === pet.id ? 1 : 0,
+                    y: hoveredPet === pet.id ? 0 : 20,
+                  }}
+                  className="absolute bottom-4 left-4 right-4 text-white"
+                >
+                  <div className="space-y-2">
+                    {pet.age && (
+                      <div className="text-sm font-medium">
+                        Age: {getAgeText(pet.age)}
+                      </div>
+                    )}
+                    {pet.gender && (
+                      <div className="text-sm font-medium">
+                        Gender: {pet.gender}
+                      </div>
+                    )}
+                    {pet.size && (
+                      <div className="text-sm font-medium">
+                        Size: {pet.size}
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
+                <div className="mb-4">
+                  <h3 className="text-xl font-bold text-[#FF1B1C] mb-2 group-hover:text-[#FF7F11] transition-colors">
+                    {pet.name || "Unnamed Pet"}
+                  </h3>
+                  <p className="text-[#7a7568] text-sm mb-1">
+                    {pet.breed || "Mixed Breed"}
+                  </p>
+                  {pet.age && (
+                    <p className="text-[#7a7568] text-sm">
+                      {getAgeText(pet.age)}
+                    </p>
+                  )}
+                </div>
+
+                {/* Description */}
+                {pet.description && (
+                  <p className="text-[#7a7568] text-sm mb-4 line-clamp-2">
+                    {pet.description}
+                  </p>
+                )}
+
+                {/* Tags */}
+                {pet.tags && pet.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {pet.tags.slice(0, 3).map((tag, idx) => (
+                      <span
+                        key={idx}
+                        className="bg-[#BEB7A4]/20 text-[#7a7568] text-xs px-2 py-1 rounded-full"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Action Button */}
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleAdoptClick(pet.id)}
+                  className="w-full bg-gradient-to-r from-[#FF7F11] to-[#FF1B1C] text-white py-3 rounded-xl font-bold hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 group/btn"
+                >
+                  <span>Adopt {pet.name || "Me"}</span>
+                  <motion.svg
+                    className="w-5 h-5"
+                    animate={{ x: [0, 5, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 8l4 4m0 0l-4 4m4-4H3"
+                    />
+                  </motion.svg>
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </AnimatePresence>
     </div>
   );
 };

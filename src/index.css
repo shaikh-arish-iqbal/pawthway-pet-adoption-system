@@ -51,8 +51,119 @@ h1 {
   } */
 }
 
+/* Dark Theme Styles */
+body.dark-theme {
+  background-color: #000000;
+  color: #ffffff;
+}
 
+body.dark-theme .bg-gradient-to-br {
+  background: linear-gradient(to bottom right, #000000, #1a1a1a, #2d2d2d);
+}
 
+body.dark-theme .bg-white {
+  background-color: #1a1a1a;
+}
+
+body.dark-theme .text-white {
+  color: #ffffff;
+}
+
+body.dark-theme .text-black {
+  color: #ffffff;
+}
+
+body.dark-theme .bg-\[\#FFFFFC\] {
+  background-color: #000000;
+}
+
+body.dark-theme .bg-\[\#f8f7f4\] {
+  background-color: #1a1a1a;
+}
+
+body.dark-theme .bg-\[\#BEB7A4\] {
+  background-color: #2d2d2d;
+}
+
+body.dark-theme .text-\[\#7a7568\] {
+  color: #cccccc;
+}
+
+body.dark-theme .text-\[\#FF7F11\] {
+  color: #fbbf24;
+}
+
+body.dark-theme .bg-\[\#FF7F11\] {
+  background-color: #fbbf24;
+}
+
+body.dark-theme .border-\[\#BEB7A4\] {
+  border-color: #2d2d2d;
+}
+
+body.dark-theme .shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(251, 191, 36, 0.1), 0 4px 6px -2px rgba(251, 191, 36, 0.05);
+}
+
+body.dark-theme .bg-gradient-to-r {
+  background: linear-gradient(to right, #fbbf24, #f59e0b);
+}
+
+body.dark-theme .text-\[\#FF1B1C\] {
+  color: #fbbf24;
+}
+
+body.dark-theme .bg-\[\#FF1B1C\] {
+  background-color: #fbbf24;
+}
+
+body.dark-theme .border-\[\#FF7F11\] {
+  border-color: #fbbf24;
+}
+
+body.dark-theme .border-\[\#FF1B1C\] {
+  border-color: #fbbf24;
+}
+
+body.dark-theme .hover\:bg-yellow-300:hover {
+  background-color: #fde047;
+}
+
+body.dark-theme .hover\:bg-yellow-400:hover {
+  background-color: #fbbf24;
+}
+
+body.dark-theme .hover\:text-yellow-400:hover {
+  color: #fbbf24;
+}
+
+body.dark-theme .bg-yellow-400\/20 {
+  background-color: rgba(251, 191, 36, 0.2);
+}
+
+body.dark-theme .hover\:bg-yellow-400\/30:hover {
+  background-color: rgba(251, 191, 36, 0.3);
+}
+
+body.dark-theme .border-yellow-400\/20 {
+  border-color: rgba(251, 191, 36, 0.2);
+}
+
+body.dark-theme .bg-black\/90 {
+  background-color: rgba(0, 0, 0, 0.9);
+}
+
+body.dark-theme .bg-black\/95 {
+  background-color: rgba(0, 0, 0, 0.95);
+}
+
+body.dark-theme .bg-white\/90 {
+  background-color: rgba(26, 26, 26, 0.9);
+}
+
+body.dark-theme .bg-white\/95 {
+  background-color: rgba(26, 26, 26, 0.95);
+}
 
 @layer base {
   body {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Menu, X, Sun, Moon } from "lucide-react";
 import { auth, db } from "../firebaseConfig";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
@@ -10,7 +10,10 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -31,140 +34,280 @@ export default function Navbar() {
     return () => unsubscribe();
   }, []);
 
+  // Handle scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      const isScrolled = window.scrollY > 20;
+      setScrolled(isScrolled);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Apply theme to body when it changes
+  useEffect(() => {
+    if (location.pathname === "/") {
+      if (isDarkTheme) {
+        document.body.classList.add("dark-theme");
+      } else {
+        document.body.classList.remove("dark-theme");
+      }
+    }
+  }, [isDarkTheme, location.pathname]);
+
   const handleLogout = async () => {
     await signOut(auth);
     navigate("/login");
   };
+
+  const toggleTheme = () => {
+    setIsDarkTheme(!isDarkTheme);
+  };
+
+  const navItems = [
+    { to: "/Adopt", label: "Adopt" },
+    { to: "/About", label: "About" },
+    { to: "/Contact", label: "Contact" },
+  ];
 
   return (
     <motion.header
       initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6 }}
-      className="fixed z-20 w-full bg-black px-6 sm:px-10 py-4 sm:py-5 shadow-lg"
+      className={`fixed z-50 w-full px-6 sm:px-10 py-4 sm:py-5 transition-all duration-500 ${
+        location.pathname === "/" && isDarkTheme
+          ? scrolled
+            ? "bg-black/80 backdrop-blur-xl border-b border-yellow-400/30 shadow-2xl shadow-yellow-400/10"
+            : "bg-black/40 backdrop-blur-md border-b border-yellow-400/20"
+          : scrolled
+          ? "bg-white/80 backdrop-blur-xl border-b border-[#FF7F11]/30 shadow-2xl shadow-[#FF7F11]/10"
+          : "bg-white/40 backdrop-blur-md border-b border-[#FF7F11]/20"
+      }`}
     >
-      <div className="flex justify-between items-center">
-        <Link
-          to="/"
-          className="text-[#FF7F11] font-extrabold text-2xl sm:text-3xl"
-        >
-          PAWTHWAY🐾
-        </Link>
+      <div className="flex justify-between items-center max-w-7xl mx-auto">
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Link
+            to="/"
+            className={`font-extrabold text-2xl sm:text-3xl transition-all duration-300 ${
+              location.pathname === "/" && isDarkTheme
+                ? "text-yellow-400 drop-shadow-lg"
+                : "text-[#FF7F11] drop-shadow-lg"
+            }`}
+          >
+            PAWTHWAY🐾
+          </Link>
+        </motion.div>
+
+        {/* Theme Toggle Button */}
+        {location.pathname === "/" && (
+          <motion.button
+            whileHover={{ scale: 1.1, rotate: 180 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={toggleTheme}
+            className={`p-3 rounded-full transition-all duration-300 backdrop-blur-sm ${
+              location.pathname === "/" && isDarkTheme
+                ? "bg-yellow-400/20 text-yellow-400 hover:bg-yellow-400/30 border border-yellow-400/30"
+                : "bg-[#FF7F11]/20 text-[#FF7F11] hover:bg-[#FF7F11]/30 border border-[#FF7F11]/30"
+            }`}
+          >
+            {isDarkTheme ? <Sun size={20} /> : <Moon size={20} />}
+          </motion.button>
+        )}
 
         {/* Hamburger menu (mobile) */}
-        <button
-          className="sm:hidden text-[#FF7F11] focus:outline-none"
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          className="sm:hidden focus:outline-none p-2 rounded-lg backdrop-blur-sm bg-white/10 border border-white/20"
           onClick={() => setMenuOpen(!menuOpen)}
         >
-          {menuOpen ? <X size={28} /> : <Menu size={28} />}
-        </button>
+          {menuOpen ? (
+            <X
+              size={24}
+              className={
+                location.pathname === "/" && isDarkTheme
+                  ? "text-yellow-400"
+                  : "text-[#FF7F11]"
+              }
+            />
+          ) : (
+            <Menu
+              size={24}
+              className={
+                location.pathname === "/" && isDarkTheme
+                  ? "text-yellow-400"
+                  : "text-[#FF7F11]"
+              }
+            />
+          )}
+        </motion.button>
 
         {/* Desktop nav */}
-        <nav className="hidden sm:flex space-x-6 items-center">
-          <Link
-            to="/Adopt"
-            className="text-[#FF7F11] font-semibold text-lg hover:underline transition transform hover:scale-110"
-          >
-            Adopt
-          </Link>
-          <Link
-            to="/About"
-            className="text-[#FF7F11] font-semibold text-lg hover:underline transition transform hover:scale-110"
-          >
-            About
-          </Link>
-          <Link
-            to="/Contact"
-            className="text-[#FF7F11] font-semibold text-lg hover:underline transition transform hover:scale-110"
-          >
-            Contact
-          </Link>
-
-          {/* ✅ Dashboard link for admin - FIXED PATH */}
-          {user && isAdmin && (
-            <Link
-              to="/admin-dashboard" // Changed to match the route in App.jsx
-              className="text-[#FF7F11] font-semibold text-lg hover:underline transition transform hover:scale-110"
+        <nav className="hidden sm:flex space-x-8 items-center">
+          {navItems.map((item) => (
+            <motion.div
+              key={item.to}
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.95 }}
             >
-              Dashboard
-            </Link>
+              <Link
+                to={item.to}
+                className={`font-semibold text-lg transition-all duration-300 relative group px-3 py-2 rounded-lg backdrop-blur-sm ${
+                  location.pathname === "/" && isDarkTheme
+                    ? "text-white hover:text-yellow-400 hover:bg-yellow-400/10"
+                    : "text-[#7a7568] hover:text-[#FF7F11] hover:bg-[#FF7F11]/10"
+                }`}
+              >
+                {item.label}
+                <span
+                  className={`absolute -bottom-1 left-1/2 w-0 h-0.5 transition-all duration-300 group-hover:w-full group-hover:left-0 ${
+                    location.pathname === "/" && isDarkTheme
+                      ? "bg-yellow-400"
+                      : "bg-[#FF7F11]"
+                  }`}
+                />
+              </Link>
+            </motion.div>
+          ))}
+
+          {/* Dashboard link for admin */}
+          {user && isAdmin && (
+            <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.95 }}>
+              <Link
+                to="/admin-dashboard"
+                className={`font-semibold text-lg transition-all duration-300 relative group px-3 py-2 rounded-lg backdrop-blur-sm ${
+                  location.pathname === "/" && isDarkTheme
+                    ? "text-white hover:text-yellow-400 hover:bg-yellow-400/10"
+                    : "text-[#7a7568] hover:text-[#FF7F11] hover:bg-[#FF7F11]/10"
+                }`}
+              >
+                Dashboard
+                <span
+                  className={`absolute -bottom-1 left-1/2 w-0 h-0.5 transition-all duration-300 group-hover:w-full group-hover:left-0 ${
+                    location.pathname === "/" && isDarkTheme
+                      ? "bg-yellow-400"
+                      : "bg-[#FF7F11]"
+                  }`}
+                />
+              </Link>
+            </motion.div>
           )}
 
-          {/* ✅ Logout/Login buttons */}
+          {/* Logout/Login buttons */}
           {user ? (
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={handleLogout}
-              className="ml-4 px-4 py-2 bg-[#FF1B1C] text-white text-base font-semibold rounded-full hover:bg-[#e60000] transition transform hover:scale-105 cursor-pointer"
+              className={`ml-6 px-6 py-3 font-semibold rounded-full transition-all duration-300 backdrop-blur-sm border ${
+                location.pathname === "/" && isDarkTheme
+                  ? "bg-yellow-400/90 text-black hover:bg-yellow-400 shadow-lg shadow-yellow-400/25 border-yellow-400/30"
+                  : "bg-[#FF1B1C]/90 text-white hover:bg-[#FF1B1C] shadow-lg shadow-[#FF1B1C]/25 border-[#FF1B1C]/30"
+              }`}
             >
               Logout
-            </button>
+            </motion.button>
           ) : (
-            <Link
-              to="/Login"
-              className="ml-4 px-4 py-2 bg-[#FF7F11] text-black font-semibold rounded-full hover:bg-[#FF1B1C] hover:text-white transition transform hover:scale-105"
-            >
-              Sign In
-            </Link>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Link
+                to="/Login"
+                className={`ml-6 px-6 py-3 font-semibold rounded-full transition-all duration-300 backdrop-blur-sm border ${
+                  location.pathname === "/" && isDarkTheme
+                    ? "bg-yellow-400/90 text-black hover:bg-yellow-400 shadow-lg shadow-yellow-400/25 border-yellow-400/30"
+                    : "bg-[#FF7F11]/90 text-white hover:bg-[#FF7F11] shadow-lg shadow-[#FF7F11]/25 border-[#FF7F11]/30"
+                }`}
+              >
+                Sign In
+              </Link>
+            </motion.div>
           )}
         </nav>
       </div>
 
       {/* Mobile menu */}
       {menuOpen && (
-        <nav className="sm:hidden mt-4 flex flex-col space-y-4 text-center">
-          <Link
-            to="/Adopt"
-            onClick={() => setMenuOpen(false)}
-            className="text-[#FF7F11] font-semibold text-lg hover:underline"
-          >
-            Adopt
-          </Link>
-          <Link
-            to="/About"
-            onClick={() => setMenuOpen(false)}
-            className="text-[#FF7F11] font-semibold text-lg hover:underline"
-          >
-            About
-          </Link>
-          <Link
-            to="/Contact"
-            onClick={() => setMenuOpen(false)}
-            className="text-[#FF7F11] font-semibold text-lg hover:underline"
-          >
-            Contact
-          </Link>
-
-          {/* ✅ Dashboard link (mobile) - Already correct */}
-          {user && isAdmin && (
-            <Link
-              to="/admin-dashboard"
-              onClick={() => setMenuOpen(false)}
-              className="text-[#FF7F11] font-semibold text-lg hover:underline"
+        <motion.nav
+          initial={{ opacity: 0, y: -20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -20, scale: 0.95 }}
+          transition={{ duration: 0.3 }}
+          className={`sm:hidden mt-6 flex flex-col space-y-4 text-center ${
+            location.pathname === "/" && isDarkTheme
+              ? "bg-black/80 backdrop-blur-xl border border-yellow-400/20"
+              : "bg-white/80 backdrop-blur-xl border border-[#FF7F11]/20"
+          } rounded-2xl p-6 shadow-2xl`}
+        >
+          {navItems.map((item) => (
+            <motion.div
+              key={item.to}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              Dashboard
-            </Link>
+              <Link
+                to={item.to}
+                onClick={() => setMenuOpen(false)}
+                className={`font-semibold text-lg transition-all duration-300 px-4 py-2 rounded-lg ${
+                  location.pathname === "/" && isDarkTheme
+                    ? "text-white hover:text-yellow-400 hover:bg-yellow-400/10"
+                    : "text-[#7a7568] hover:text-[#FF7F11] hover:bg-[#FF7F11]/10"
+                }`}
+              >
+                {item.label}
+              </Link>
+            </motion.div>
+          ))}
+
+          {/* Dashboard link (mobile) */}
+          {user && isAdmin && (
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Link
+                to="/admin-dashboard"
+                onClick={() => setMenuOpen(false)}
+                className={`font-semibold text-lg transition-all duration-300 px-4 py-2 rounded-lg ${
+                  location.pathname === "/" && isDarkTheme
+                    ? "text-white hover:text-yellow-400 hover:bg-yellow-400/10"
+                    : "text-[#7a7568] hover:text-[#FF7F11] hover:bg-[#FF7F11]/10"
+                }`}
+              >
+                Dashboard
+              </Link>
+            </motion.div>
           )}
 
           {user ? (
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => {
                 handleLogout();
                 setMenuOpen(false);
               }}
-              className="inline-block mx-auto px-4 py-2 bg-[#FF1B1C] text-white font-semibold rounded-full hover:bg-[#e60000] transition cursor-pointer"
+              className={`inline-block mx-auto px-6 py-3 font-semibold rounded-full transition-all duration-300 backdrop-blur-sm border ${
+                location.pathname === "/" && isDarkTheme
+                  ? "bg-yellow-400/90 text-black hover:bg-yellow-400 border-yellow-400/30"
+                  : "bg-[#FF1B1C]/90 text-white hover:bg-[#FF1B1C] border-[#FF1B1C]/30"
+              }`}
             >
               Logout
-            </button>
+            </motion.button>
           ) : (
-            <Link
-              to="/Login"
-              onClick={() => setMenuOpen(false)}
-              className="inline-block mx-auto px-4 py-2 bg-[#FF7F11] text-black font-semibold rounded-full hover:bg-[#FF1B1C] hover:text-white transition"
-            >
-              Sign In
-            </Link>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Link
+                to="/Login"
+                onClick={() => setMenuOpen(false)}
+                className={`inline-block mx-auto px-6 py-3 font-semibold rounded-full transition-all duration-300 backdrop-blur-sm border ${
+                  location.pathname === "/" && isDarkTheme
+                    ? "bg-yellow-400/90 text-black hover:bg-yellow-400 border-yellow-400/30"
+                    : "bg-[#FF7F11]/90 text-white hover:bg-[#FF7F11] border-[#FF7F11]/30"
+                }`}
+              >
+                Sign In
+              </Link>
+            </motion.div>
           )}
-        </nav>
+        </motion.nav>
       )}
     </motion.header>
   );
