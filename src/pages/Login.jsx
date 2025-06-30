@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { auth, db } from "../firebaseConfig";
+import { auth, db } from "../firebaseConfig"; // Ensure 'auth' is exported from firebaseConfig
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  onAuthStateChanged, // Keep this import, it's good practice for other listeners
+  GoogleAuthProvider, // Import GoogleAuthProvider
+  signInWithPopup,    // Import signInWithPopup
+  onAuthStateChanged,
 } from "firebase/auth";
 import { setDoc, doc, getDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
-// import Navbar from "../components/Navbar"; // Keep commented or uncomment if you want Navbar on login page
+// import Navbar from "../components/Navbar";
 import MyFooter from "../components/Footer";
 
 export default function Login() {
@@ -18,11 +20,24 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  // IMPORTANT: Removed the useEffect that was prematurely redirecting
-  // The redirection logic will now only happen *after* a successful login/registration
-  // in the handleAuth function.
-  // For initial page load/refresh, your App.jsx (or a root component)
-  // should ideally handle auth state changes and initial redirects.
+  // useEffect to handle initial auth state check and potential redirect
+  // This is good practice to prevent showing login page to already logged-in users
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // User is logged in, check role and redirect
+        const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists() && userDoc.data().role === "admin") {
+          navigate("/admin-dashboard");
+        } else {
+          navigate("/adopt");
+        }
+      }
+    });
+    return unsubscribe; // Cleanup subscription on component unmount
+  }, [navigate]); // navigate should be in dependency array
 
   const handleAuth = async (e) => {
     e.preventDefault();
@@ -43,9 +58,9 @@ export default function Login() {
 
       let userCredential;
       try {
-        // Attempt 1: Try to Log In
+        // Attempt 1: Try to Log In with Email/Password
         userCredential = await signInWithEmailAndPassword(auth, email, password);
-        console.log("Login successful!");
+        console.log("Email/Password Login successful!");
       } catch (loginError) {
         // If login fails, attempt to create the user
         if (
@@ -53,25 +68,26 @@ export default function Login() {
           loginError.code === "auth/wrong-password" ||
           loginError.code === "auth/invalid-credential"
         ) {
-          console.log("Login failed or user not found. Attempting to register...");
+          console.log("Email/Password login failed. Attempting to register...");
           try {
             userCredential = await createUserWithEmailAndPassword(
               auth,
               email,
               password
             );
-            console.log("User registered successfully!");
+            console.log("User registered successfully with Email/Password!");
 
             // Save user role to Firestore for new users
             await setDoc(doc(db, "users", userCredential.user.uid), {
               email: userCredential.user.email,
               role: "user", // Default role for newly registered users
-            });
+              createdAt: new Date(), // Add a timestamp
+            }, { merge: true }); // Use merge: true in case doc exists (e.g. from Google sign-up first)
             console.log("New user data saved to Firestore.");
 
           } catch (signupError) {
             if (signupError.code === "auth/email-already-in-use") {
-              setError("This email is already registered. Please try logging in with the correct password.");
+              setError("This email is already registered. Please try logging in with the correct password or use Google sign-in.");
             } else if (signupError.code === "auth/weak-password") {
               setError("Password is too weak. Please choose a stronger password (at least 6 characters).");
             } else {
@@ -95,7 +111,6 @@ export default function Login() {
       setPassword("");
 
       // Redirect based on user role after successful authentication
-      // Use the user from userCredential directly as it's the most reliable after a fresh auth operation
       const user = userCredential.user;
       if (user) {
         const userDocRef = doc(db, "users", user.uid);
@@ -104,7 +119,6 @@ export default function Login() {
         if (userDoc.exists() && userDoc.data().role === "admin") {
           navigate("/admin-dashboard");
         } else {
-          // Default redirection for non-admin users or newly registered users
           navigate("/adopt");
         }
       } else {
@@ -121,9 +135,62 @@ export default function Login() {
     }
   };
 
+  // --- New function for Google Sign-In ---
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    setError(""); // Clear previous errors
+    const provider = new GoogleAuthProvider(); // Create a Google Auth Provider
+
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user; // The signed-in user info
+
+      console.log('Google Sign-In Successful!', user);
+
+      // Check if user document exists in Firestore, create if not
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (!userDoc.exists()) {
+        // New user or first time Google login, create user document
+        await setDoc(userDocRef, {
+          email: user.email,
+          displayName: user.displayName, // Save display name from Google
+          photoURL: user.photoURL,     // Save photo URL from Google
+          role: "user", // Default role
+          createdAt: new Date(),
+        });
+        console.log("New Google user data saved to Firestore.");
+      }
+
+      // Redirect based on user role (including existing users and newly created ones)
+      const updatedUserDoc = await getDoc(userDocRef); // Re-fetch to get potential updated role
+      if (updatedUserDoc.exists() && updatedUserDoc.data().role === "admin") {
+        navigate("/admin-dashboard");
+      } else {
+        navigate("/adopt");
+      }
+
+    } catch (error) {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      console.error('Google Sign-In Error:', errorMessage, 'Code:', errorCode);
+
+      if (errorCode === 'auth/popup-closed-by-user') {
+        setError('Google sign-in popup was closed. Please try again.');
+      } else if (errorCode === 'auth/cancelled-popup-request') {
+        setError('Google sign-in attempt was cancelled. Please try again.');
+      } else {
+        setError(errorMessage || 'An error occurred during Google sign-in.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div>
-      {/* <Navbar /> */} {/* Uncomment if you want to include your Navbar */}
+      {/* <Navbar /> */}
       <div className="min-h-screen bg-[#FFFFFC] flex items-center justify-center px-4">
         <div className="flex flex-col md:flex-row w-full max-w-5xl bg-white shadow-xl rounded-xl overflow-hidden">
           <div
@@ -201,6 +268,34 @@ export default function Login() {
                   </span>
                 </p>
               </form>
+
+              {/* Separator */}
+              <div className="flex items-center my-6">
+                <div className="flex-grow border-t border-gray-300"></div>
+                <span className="flex-shrink mx-4 text-gray-500 text-sm">OR</span>
+                <div className="flex-grow border-t border-gray-300"></div>
+              </div>
+
+              {/* Google Sign-In Button */}
+              <button
+                onClick={handleGoogleSignIn}
+                disabled={loading}
+                className="w-full bg-[#FF1B1C] hover:bg-red-700 text-white py-3 font-semibold rounded transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+              >
+                {loading ? (
+                  "Processing..."
+                ) : (
+                  <>
+                    <img
+                      src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                      alt="Google icon"
+                      className="w-5 h-5"
+                    />
+                    Sign in with Google
+                  </>
+                )}
+              </button>
+
             </div>
           </div>
         </div>

@@ -47,7 +47,7 @@ export default function Footer() {
       </div>
 
       <div className="mt-10 text-center text-sm text-[#BEB7A4] border-t border-[#BEB7A4] pt-4">
-        © {new Date().getFullYear()} PawPal. All rights reserved.
+        © {new Date().getFullYear()} Pawthway. All rights reserved.
       </div>
     </motion.footer>
   );
