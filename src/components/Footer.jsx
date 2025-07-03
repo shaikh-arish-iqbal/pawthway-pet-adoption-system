@@ -42,7 +42,7 @@ export default function Footer() {
             <a href="#" className="text-[#FFFFFC] hover:text-[#FF7F11]"><FaTwitter /></a>
             <a href="#" className="text-[#FFFFFC] hover:text-[#FF7F11]"><FaEnvelope /></a>
           </div>
-          <p className="text-[#BEB7A4] text-sm">Email: pawthwaysupport@gmail.com</p>
+          <p className="text-[#BEB7A4] text-sm">Email: pawthwayofficial@gmail.com</p>
         </div>
       </div>
 
