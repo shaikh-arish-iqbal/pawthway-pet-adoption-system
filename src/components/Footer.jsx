@@ -42,12 +42,12 @@ export default function Footer() {
             <a href="#" className="text-[#FFFFFC] hover:text-[#FF7F11]"><FaTwitter /></a>
             <a href="#" className="text-[#FFFFFC] hover:text-[#FF7F11]"><FaEnvelope /></a>
           </div>
-          <p className="text-[#BEB7A4] text-sm">Email: pawthwaysupport@gmail.com</p>
+          <p className="text-[#BEB7A4] text-sm">Email: pawthwayofficial@gmail.com</p>
         </div>
       </div>
 
       <div className="mt-10 text-center text-sm text-[#BEB7A4] border-t border-[#BEB7A4] pt-4">
-        © {new Date().getFullYear()} PawPal. All rights reserved.
+        © {new Date().getFullYear()} Pawthway. All rights reserved.
       </div>
     </motion.footer>
   );
