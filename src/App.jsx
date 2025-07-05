@@ -7,10 +7,13 @@ import Contact from "./pages/Contact";
 import Login from "./pages/Login";
 import PetDetail from "./pages/PetDetail";
 import Navbar from "./components/Navbar";
+import UserProfile from "./components/UserProfile";
 import ShelterInfoForm from "./pages/ShelterInfoForm";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdoptionForm from "./pages/AdoptionForm";
 import FAQPage from "./pages/FAQPage";
+import UserDashboard from "./pages/UserDashboard";
+
 
 function App() {
   return (
@@ -28,6 +31,8 @@ function App() {
           <Route path="/shelter-info" element={<ShelterInfoForm />} />
           <Route path="/adoption-form/:id" element={<AdoptionForm />} />
           <Route path="/faq" element={<FAQPage />} />
+          <Route path="/user-profile" element={<UserProfile />} />
+          <Route path="/user-dashboard" element={<UserDashboard />} />
         </Routes>
       </BrowserRouter>
     </>
