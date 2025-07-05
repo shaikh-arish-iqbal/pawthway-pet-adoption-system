@@ -58,7 +58,7 @@ body {
 
 /* Ensure content starts after navbar */
 main, .main-content, #root > div:not(header) {
-  padding-top: 80px; /* Adjust based on navbar height */
+  padding-top: 70px; /* Reduced from 80px to account for larger navbar */
 }
 
 /* For pages that need full height without padding */

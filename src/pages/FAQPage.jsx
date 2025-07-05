@@ -12,7 +12,7 @@ const faqs = [
   {
     question: "How do I adopt a pet through Pawthway?",
     answer:
-      "Browse available pets, select the one you’re interested in, fill out an adoption form, and the shelter will reach out to you to proceed further.",
+      "Browse available pets, select the one you're interested in, fill out an adoption form, and the shelter will reach out to you to proceed further.",
   },
   {
     question: "Is there an adoption fee?",
@@ -57,7 +57,7 @@ const FAQPage = () => {
     <div className="bg-[#FFFFFC] min-h-screen flex flex-col">
       {/* <Navbar /> */}
 
-      <div className="flex-grow px-6 py-30 max-w-4xl mx-auto">
+      <div className="flex-grow px-6 py-20 max-w-4xl mx-auto">
         <motion.h1
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}

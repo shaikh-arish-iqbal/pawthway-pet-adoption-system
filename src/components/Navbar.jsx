@@ -92,7 +92,7 @@ export default function Navbar() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -80, opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className={`fixed z-50 w-full px-4 sm:px-8 py-3 transition-all duration-500 ${
+          className={`fixed z-50 w-full px-4 sm:px-8 py-3 sm:py-4 transition-all duration-500 ${
             location.pathname === "/" && isDarkTheme
               ? scrolled
                 ? "bg-black/80 backdrop-blur-xl border-b border-yellow-400/30 shadow-2xl shadow-yellow-400/10"
@@ -106,7 +106,7 @@ export default function Navbar() {
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link
                 to="/"
-                className={`font-extrabold text-xl sm:text-2xl transition-all duration-300 ${
+                className={`font-extrabold text-2xl sm:text-3xl transition-all duration-300 ${
                   location.pathname === "/" && isDarkTheme
                     ? "text-yellow-400 drop-shadow-lg"
                     : "text-[#FF7F11] drop-shadow-lg"
@@ -122,13 +122,13 @@ export default function Navbar() {
                 whileHover={{ scale: 1.1, rotate: 180 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={toggleTheme}
-                className={`p-2 rounded-full transition-all duration-300 backdrop-blur-sm ${
+                className={`p-3 rounded-full transition-all duration-300 backdrop-blur-sm ${
                   location.pathname === "/" && isDarkTheme
                     ? "bg-yellow-400/20 text-yellow-400 hover:bg-yellow-400/30 border border-yellow-400/30"
                     : "bg-[#FF7F11]/20 text-[#FF7F11] hover:bg-[#FF7F11]/30 border border-[#FF7F11]/30"
                 }`}
               >
-                {isDarkTheme ? <Sun size={16} /> : <Moon size={16} />}
+                {isDarkTheme ? <Sun size={18} /> : <Moon size={18} />}
               </motion.button>
             )}
 
@@ -136,12 +136,12 @@ export default function Navbar() {
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              className="sm:hidden focus:outline-none p-1.5 rounded-lg backdrop-blur-sm bg-white/10 border border-white/20"
+              className="sm:hidden focus:outline-none p-2 rounded-lg backdrop-blur-sm bg-white/10 border border-white/20"
               onClick={() => setMenuOpen(!menuOpen)}
             >
               {menuOpen ? (
                 <X
-                  size={20}
+                  size={22}
                   className={
                     location.pathname === "/" && isDarkTheme
                       ? "text-yellow-400"
@@ -150,7 +150,7 @@ export default function Navbar() {
                 />
               ) : (
                 <Menu
-                  size={20}
+                  size={22}
                   className={
                     location.pathname === "/" && isDarkTheme
                       ? "text-yellow-400"
@@ -161,7 +161,7 @@ export default function Navbar() {
             </motion.button>
 
             {/* Desktop nav */}
-            <nav className="hidden sm:flex space-x-6 items-center">
+            <nav className="hidden sm:flex space-x-8 items-center">
               {navItems.map((item) => (
                 <motion.div
                   key={item.to}
@@ -170,7 +170,7 @@ export default function Navbar() {
                 >
                   <Link
                     to={item.to}
-                    className={`font-semibold text-base transition-all duration-300 relative group px-2.5 py-1.5 rounded-lg backdrop-blur-sm ${
+                    className={`font-semibold text-lg transition-all duration-300 relative group px-3 py-2 rounded-lg backdrop-blur-sm ${
                       location.pathname === "/" && isDarkTheme
                         ? "text-white hover:text-yellow-400 hover:bg-yellow-400/10"
                         : "text-[#7a7568] hover:text-[#FF7F11] hover:bg-[#FF7F11]/10"
@@ -193,7 +193,7 @@ export default function Navbar() {
                 <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.95 }}>
                   <Link
                     to="/admin-dashboard"
-                    className={`font-semibold text-base transition-all duration-300 relative group px-2.5 py-1.5 rounded-lg backdrop-blur-sm ${
+                    className={`font-semibold text-lg transition-all duration-300 relative group px-3 py-2 rounded-lg backdrop-blur-sm ${
                       location.pathname === "/" && isDarkTheme
                         ? "text-white hover:text-yellow-400 hover:bg-yellow-400/10"
                         : "text-[#7a7568] hover:text-[#FF7F11] hover:bg-[#FF7F11]/10"
@@ -217,7 +217,7 @@ export default function Navbar() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleLogout}
-                  className={`ml-4 px-4 py-2 font-semibold rounded-full transition-all duration-300 backdrop-blur-sm border text-sm ${
+                  className={`ml-6 px-6 py-3 font-semibold rounded-full transition-all duration-300 backdrop-blur-sm border text-base ${
                     location.pathname === "/" && isDarkTheme
                       ? "bg-yellow-400/90 text-black hover:bg-yellow-400 shadow-lg shadow-yellow-400/25 border-yellow-400/30"
                       : "bg-[#FF1B1C]/90 text-white hover:bg-[#FF1B1C] shadow-lg shadow-[#FF1B1C]/25 border-[#FF1B1C]/30"
@@ -232,7 +232,7 @@ export default function Navbar() {
                 >
                   <Link
                     to="/Login"
-                    className={`ml-4 px-4 py-2 font-semibold rounded-full transition-all duration-300 backdrop-blur-sm border text-sm ${
+                    className={`ml-6 px-6 py-3 font-semibold rounded-full transition-all duration-300 backdrop-blur-sm border text-base ${
                       location.pathname === "/" && isDarkTheme
                         ? "bg-yellow-400/90 text-black hover:bg-yellow-400 shadow-lg shadow-yellow-400/25 border-yellow-400/30"
                         : "bg-[#FF7F11]/90 text-white hover:bg-[#FF7F11] shadow-lg shadow-[#FF7F11]/25 border-[#FF7F11]/30"
@@ -267,7 +267,7 @@ export default function Navbar() {
                   <Link
                     to={item.to}
                     onClick={() => setMenuOpen(false)}
-                    className={`font-semibold text-base transition-all duration-300 px-3 py-2 rounded-lg ${
+                    className={`font-semibold text-lg transition-all duration-300 px-3 py-2 rounded-lg ${
                       location.pathname === "/" && isDarkTheme
                         ? "text-white hover:text-yellow-400 hover:bg-yellow-400/10"
                         : "text-[#7a7568] hover:text-[#FF7F11] hover:bg-[#FF7F11]/10"
@@ -287,7 +287,7 @@ export default function Navbar() {
                   <Link
                     to="/admin-dashboard"
                     onClick={() => setMenuOpen(false)}
-                    className={`font-semibold text-base transition-all duration-300 px-3 py-2 rounded-lg ${
+                    className={`font-semibold text-lg transition-all duration-300 px-3 py-2 rounded-lg ${
                       location.pathname === "/" && isDarkTheme
                         ? "text-white hover:text-yellow-400 hover:bg-yellow-400/10"
                         : "text-[#7a7568] hover:text-[#FF7F11] hover:bg-[#FF7F11]/10"
@@ -306,7 +306,7 @@ export default function Navbar() {
                     handleLogout();
                     setMenuOpen(false);
                   }}
-                  className={`inline-block mx-auto px-4 py-2 font-semibold rounded-full transition-all duration-300 backdrop-blur-sm border text-sm ${
+                  className={`inline-block mx-auto px-6 py-3 font-semibold rounded-full transition-all duration-300 backdrop-blur-sm border text-base ${
                     location.pathname === "/" && isDarkTheme
                       ? "bg-yellow-400/90 text-black hover:bg-yellow-400 border-yellow-400/30"
                       : "bg-[#FF1B1C]/90 text-white hover:bg-[#FF1B1C] border-[#FF1B1C]/30"
@@ -322,7 +322,7 @@ export default function Navbar() {
                   <Link
                     to="/Login"
                     onClick={() => setMenuOpen(false)}
-                    className={`inline-block mx-auto px-4 py-2 font-semibold rounded-full transition-all duration-300 backdrop-blur-sm border text-sm ${
+                    className={`inline-block mx-auto px-6 py-3 font-semibold rounded-full transition-all duration-300 backdrop-blur-sm border text-base ${
                       location.pathname === "/" && isDarkTheme
                         ? "bg-yellow-400/90 text-black hover:bg-yellow-400 border-yellow-400/30"
                         : "bg-[#FF7F11]/90 text-white hover:bg-[#FF7F11] border-[#FF7F11]/30"

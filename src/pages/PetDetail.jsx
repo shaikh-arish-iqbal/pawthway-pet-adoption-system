@@ -122,7 +122,7 @@ const PetDetail = () => {
   }
 
   return (
-    <div className="h-screen bg-gradient-to-br from-[#FFFFFC] via-[#f8f7f4] to-[#BEB7A4] flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-[#FFFFFC] via-[#f8f7f4] to-[#BEB7A4] flex flex-col">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -378,6 +378,9 @@ const PetDetail = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Footer */}
+      <MyFooter />
     </div>
   );
 };
