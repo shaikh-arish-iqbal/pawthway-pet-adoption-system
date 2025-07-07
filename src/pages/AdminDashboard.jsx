@@ -59,6 +59,8 @@ export default function AdminDashboard() {
   const [editingPet, setEditingPet] = useState(null);
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [messages, setMessages] = useState([]);
+  const [messagesLoading, setMessagesLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -86,6 +88,31 @@ export default function AdminDashboard() {
 
     if (["edit", "delete", "applications"].includes(activeTab)) {
       fetchPets();
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (activeTab === "messages") {
+      const fetchMessages = async () => {
+        setMessagesLoading(true);
+        try {
+          const snapshot = await getDocs(collection(db, "contacts"));
+          const msgs = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          // Sort by createdAt descending
+          msgs.sort(
+            (a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)
+          );
+          setMessages(msgs);
+        } catch (e) {
+          alert("Failed to load messages: " + e.message);
+        } finally {
+          setMessagesLoading(false);
+        }
+      };
+      fetchMessages();
     }
   }, [activeTab]);
 
@@ -266,15 +293,6 @@ export default function AdminDashboard() {
         animate={{ x: 0 }}
         className="w-64 bg-black/90 backdrop-blur-xl text-white p-6 space-y-6 shadow-2xl"
       >
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-2xl font-bold flex items-center space-x-3"
-        >
-          <span className="text-3xl">🐾</span>
-          <span>Pawthway</span>
-        </motion.div>
-
         <nav className="flex flex-col space-y-2">
           <SidebarButton
             icon={Home}
@@ -335,38 +353,41 @@ export default function AdminDashboard() {
             </h1>
 
             {activeTab === "dashboard" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <Card
-                  icon={PlusCircle}
-                  title="Add a New Pet"
-                  onClick={() => setActiveTab("add")}
-                />
-                <Card
-                  icon={Edit}
-                  title="Edit Pet"
-                  onClick={() => setActiveTab("edit")}
-                />
-                <Card
-                  icon={Trash2}
-                  title="Remove Pet"
-                  onClick={() => setActiveTab("delete")}
-                />
-                <Card
-                  icon={FileText}
-                  title="View Applications"
-                  onClick={() => setActiveTab("applications")}
-                />
-                <Card
-                  icon={Grid}
-                  title="Manage Categories"
-                  onClick={() => alert("Coming soon")}
-                />
-                <Card
-                  icon={BarChart}
-                  title="Generate Reports"
-                  onClick={() => alert("Coming soon")}
-                />
-              </div>
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <Card
+                    icon={PlusCircle}
+                    title="Add a New Pet"
+                    onClick={() => setActiveTab("add")}
+                  />
+                  <Card
+                    icon={Edit}
+                    title="Edit Pet"
+                    onClick={() => setActiveTab("edit")}
+                  />
+                  <Card
+                    icon={Trash2}
+                    title="Remove Pet"
+                    onClick={() => setActiveTab("delete")}
+                  />
+                  <Card
+                    icon={FileText}
+                    title="View Applications"
+                    onClick={() => setActiveTab("applications")}
+                  />
+                  <Card
+                    icon={Grid}
+                    title="Manage Categories"
+                    onClick={() => alert("Coming soon")}
+                  />
+                  <Card
+                    icon={BarChart}
+                    title="Generate Reports"
+                    onClick={() => alert("Coming soon")}
+                  />
+                </div>
+                <div className="h-24" />
+              </>
             )}
 
             {activeTab === "add" && renderForm("Add New Pet", handleAddPet)}
@@ -480,6 +501,79 @@ export default function AdminDashboard() {
             {activeTab === "shelter-info" && (
               <div className="space-y-6">
                 <ShelterInfoForm />
+              </div>
+            )}
+
+            {activeTab === "messages" && (
+              <div className="space-y-6">
+                <h2 className="text-2xl font-bold text-[#FF1B1C] mb-4">
+                  Contact Messages
+                </h2>
+                {messagesLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF7F11] mx-auto"></div>
+                  </div>
+                ) : messages.length === 0 ? (
+                  <div className="text-center text-[#7a7568]">
+                    No messages found.
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full bg-white rounded-xl shadow border border-[#BEB7A4]/30">
+                      <thead>
+                        <tr>
+                          <th className="px-4 py-2 text-left text-[#FF7F11]">
+                            Name
+                          </th>
+                          <th className="px-4 py-2 text-left text-[#FF7F11]">
+                            Email
+                          </th>
+                          <th className="px-4 py-2 text-left text-[#FF7F11]">
+                            Phone
+                          </th>
+                          <th className="px-4 py-2 text-left text-[#FF7F11]">
+                            Subject
+                          </th>
+                          <th className="px-4 py-2 text-left text-[#FF7F11]">
+                            Message
+                          </th>
+                          <th className="px-4 py-2 text-left text-[#FF7F11]">
+                            Date
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {messages.map((msg) => (
+                          <tr
+                            key={msg.id}
+                            className="border-t border-[#BEB7A4]/20"
+                          >
+                            <td className="px-4 py-2 text-black">{msg.name}</td>
+                            <td className="px-4 py-2 text-black">
+                              {msg.email}
+                            </td>
+                            <td className="px-4 py-2 text-black">
+                              {msg.phone}
+                            </td>
+                            <td className="px-4 py-2 text-black">
+                              {msg.subject}
+                            </td>
+                            <td className="px-4 py-2 max-w-xs text-black break-words">
+                              {msg.message}
+                            </td>
+                            <td className="px-4 py-2 text-xs text-black">
+                              {msg.createdAt?.seconds
+                                ? new Date(
+                                    msg.createdAt.seconds * 1000
+                                  ).toLocaleString()
+                                : ""}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             )}
           </motion.div>
@@ -769,7 +863,8 @@ export default function AdminDashboard() {
   }
 }
 
-function Card({ icon: Icon, title, onClick }) {
+function Card({ icon, title, onClick }) {
+  const Icon = icon;
   return (
     <motion.div
       whileHover={{ scale: 1.05, y: -5 }}
@@ -790,7 +885,8 @@ function Card({ icon: Icon, title, onClick }) {
   );
 }
 
-function SidebarButton({ icon: Icon, label, onClick, active, danger }) {
+function SidebarButton({ icon, label, onClick, active, danger }) {
+  const Icon = icon;
   return (
     <motion.button
       whileHover={{ x: 5 }}

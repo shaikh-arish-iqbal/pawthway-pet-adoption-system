@@ -5,7 +5,7 @@ import {
   useTransform,
   AnimatePresence,
 } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import MyFooter from "../components/Footer";
 
 const backgroundImages = [
@@ -73,6 +73,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { scrollY } = useScroll();
+  const navigate = useNavigate();
 
   const heroY = useTransform(scrollY, [0, 500], [0, -100]);
   const heroOpacity = useTransform(scrollY, [0, 300], [1, 0.3]);
@@ -83,6 +84,14 @@ export default function Home() {
     }, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  // Add handler for search
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/Adopt?search=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#FFFFFC] via-[#f8f7f4] to-[#BEB7A4] text-[#000000] font-sans overflow-x-hidden">
@@ -170,12 +179,8 @@ export default function Home() {
                 backgroundClip: "text",
               }}
             >
-              Find Your
-              <br />
-              <span className="text-[#FF7F11] drop-shadow-lg">
-                Fur-ever
-              </span>{" "}
-              Friend
+              Find Your <br />
+              Fur-ever Friend
             </motion.h1>
 
             <motion.p
@@ -196,7 +201,7 @@ export default function Home() {
             transition={{ duration: 1, delay: 0.6 }}
             className="relative max-w-2xl mx-auto mb-8"
           >
-            <motion.div whileFocus={{ scale: 1.02 }} className="relative">
+            <form onSubmit={handleSearch} className="relative">
               <input
                 type="text"
                 value={searchQuery}
@@ -207,6 +212,7 @@ export default function Home() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                type="submit"
                 className="absolute right-2 top-2 bg-[#FF7F11] text-white p-3 rounded-full hover:bg-[#e56e0e] transition-colors"
               >
                 <svg
@@ -223,7 +229,7 @@ export default function Home() {
                   />
                 </svg>
               </motion.button>
-            </motion.div>
+            </form>
           </motion.div>
 
           {/* CTA Buttons */}

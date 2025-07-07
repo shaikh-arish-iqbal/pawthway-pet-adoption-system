@@ -1,20 +1,23 @@
 import React, { useState } from "react";
 import { auth, db } from "../firebaseConfig";
 import {
-  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
 } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { setDoc, doc, getDoc } from "firebase/firestore";
 import { useNavigate, Link } from "react-router-dom";
 import MyFooter from "../components/Footer";
 
-export default function Login() {
+export default function Register() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleGoogleSignIn = async () => {
@@ -32,13 +35,14 @@ export default function Login() {
 
       if (!userDocSnap.exists()) {
         await setDoc(userDocRef, {
-          name: user.displayName || "",
+          name: user.displayName || "Google User",
           email: user.email,
           role: "user",
+          createdAt: new Date().toISOString(),
         });
       }
 
-      navigate("/"); // redirect to home page instead of /adopt
+      navigate("/"); // redirect to home page
     } catch (err) {
       console.error("Google Sign-In Error:", err.message);
       setError("Google sign-in failed. Please try again.");
@@ -47,48 +51,56 @@ export default function Login() {
     }
   };
 
-  const handleLogin = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
     try {
-      if (!email || !password) {
-        throw new Error("Please enter both email and password.");
+      // Validation
+      if (!name || !email || !password || !confirmPassword) {
+        throw new Error("Please fill in all fields.");
+      }
+      if (name.trim().length < 2) {
+        throw new Error("Name must be at least 2 characters long.");
       }
       if (!email.includes("@") || !email.includes(".")) {
         throw new Error("Invalid email format.");
       }
+      if (password.length < 6) {
+        throw new Error("Password must be at least 6 characters.");
+      }
+      if (password !== confirmPassword) {
+        throw new Error("Passwords do not match.");
+      }
 
-      // Attempt to sign in
-      const userCredential = await signInWithEmailAndPassword(
+      // Create user account
+      const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
         password
       );
 
-      // Successfully authenticated
-      const user = userCredential.user;
+      // Create user document in Firestore
+      await setDoc(doc(db, "users", userCredential.user.uid), {
+        name: name.trim(),
+        email: userCredential.user.email,
+        role: "user",
+        createdAt: new Date().toISOString(),
+      });
 
-      // Check if user exists in Firestore and get their role
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      if (userDoc.exists() && userDoc.data().role === "admin") {
-        navigate("/admin-dashboard");
-      } else {
-        navigate("/"); // redirect normal users to home
-      }
+      // Redirect to home page
+      navigate("/");
     } catch (err) {
-      console.error("Login error:", err);
-      if (err.code === "auth/user-not-found") {
-        setError("No account found with this email. Please register first.");
-      } else if (err.code === "auth/wrong-password") {
-        setError("Incorrect password. Please try again.");
-      } else if (err.code === "auth/invalid-credential") {
+      console.error("Registration error:", err);
+      if (err.code === "auth/email-already-in-use") {
         setError(
-          "Invalid email or password. Please check your credentials and try again."
+          "This email is already registered. Please try logging in instead."
         );
+      } else if (err.code === "auth/weak-password") {
+        setError("Password is too weak. Please choose a stronger password.");
       } else {
-        setError(err.message || "Login failed. Please try again.");
+        setError(err.message || "Registration failed. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -109,7 +121,7 @@ export default function Login() {
           <div className="w-full md:w-1/2 bg-[#FFFFFC] text-[#000000] flex items-center justify-center overflow-y-auto">
             <div className="w-full p-6 sm:p-10 flex flex-col justify-center min-h-full">
               <h2 className="text-3xl font-bold mb-6 text-center text-[#FF7F11]">
-                Welcome Back 🐾
+                Create Account 🐾
               </h2>
 
               {error && (
@@ -118,7 +130,22 @@ export default function Login() {
                 </div>
               )}
 
-              <form onSubmit={handleLogin} className="space-y-6 w-full">
+              <form onSubmit={handleRegister} className="space-y-6 w-full">
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full p-3 border border-[#BEB7A4] rounded bg-[#FFFFFC] text-[#000000] focus:ring-[#FF7F11]"
+                    placeholder="Enter your full name"
+                    disabled={loading}
+                    required
+                  />
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium mb-1">
                     Email Address
@@ -144,7 +171,7 @@ export default function Login() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="w-full p-3 border border-[#BEB7A4] rounded bg-[#FFFFFC] text-[#000000] focus:ring-[#FF7F11] pr-12"
-                      placeholder="Your secure password"
+                      placeholder="Create a secure password"
                       disabled={loading}
                       required
                     />
@@ -158,12 +185,36 @@ export default function Login() {
                   </div>
                 </div>
 
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="w-full p-3 border border-[#BEB7A4] rounded bg-[#FFFFFC] text-[#000000] focus:ring-[#FF7F11] pr-12"
+                      placeholder="Confirm your password"
+                      disabled={loading}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword((prev) => !prev)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-[#FF7F11] hover:text-[#FF1B1C]"
+                    >
+                      {showConfirmPassword ? "Hide" : "Show"}
+                    </button>
+                  </div>
+                </div>
+
                 <button
                   type="submit"
                   disabled={loading}
                   className="w-full bg-[#FF7F11] hover:bg-[#FF1B1C] text-white py-3 font-semibold rounded transition duration-300"
                 >
-                  {loading ? "Signing In..." : "Sign In"}
+                  {loading ? "Creating Account..." : "Create Account"}
                 </button>
 
                 <button
@@ -194,12 +245,12 @@ export default function Login() {
                 </button>
 
                 <p className="text-center text-sm text-[#000000]">
-                  Don't have an account?{" "}
+                  Already have an account?{" "}
                   <Link
-                    to="/register"
+                    to="/login"
                     className="text-[#FF1B1C] font-semibold hover:underline"
                   >
-                    Create one here
+                    Sign in here
                   </Link>
                 </p>
               </form>

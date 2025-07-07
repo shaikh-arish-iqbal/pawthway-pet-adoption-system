@@ -112,9 +112,14 @@ export default function UserProfile() {
             alt="avatar"
             className="w-24 h-24 mx-auto rounded-full mb-4"
           />
-          <h2 className="text-3xl font-bold text-center text-[#FF7F11] mb-6">
+          <h2 className="text-3xl font-bold text-center text-[#FF7F11] mb-2">
             Profile
           </h2>
+          {userData.name && (
+            <p className="text-center text-lg text-gray-600 mb-6">
+              Welcome, {userData.name}!
+            </p>
+          )}
 
           <button
             onClick={() => setEditing(!editing)}
@@ -127,12 +132,12 @@ export default function UserProfile() {
             {/* Name */}
             <div>
               <label className="block text-[#222] font-semibold mb-1">
-                Name
+                Full Name
               </label>
               <input
                 type="text"
                 name="name"
-                placeholder="First Name"
+                placeholder="Enter your full name"
                 value={userData.name}
                 onChange={handleChange}
                 readOnly={!editing}
