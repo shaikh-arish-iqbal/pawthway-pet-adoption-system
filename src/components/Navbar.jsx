@@ -99,6 +99,7 @@ export default function Navbar({ onTabChange }) {
                     ? "text-yellow-400 drop-shadow-lg"
                     : "text-[#FF7F11] drop-shadow-lg"
                 }`}
+                onClick={() => setMenuOpen(false)}
               >
                 PAWTHWAY🐾
               </Link>
@@ -124,6 +125,7 @@ export default function Navbar({ onTabChange }) {
               whileTap={{ scale: 0.9 }}
               className="sm:hidden focus:outline-none p-1.5 rounded-lg backdrop-blur-sm bg-white/10 border border-white/20"
               onClick={() => setMenuOpen(!menuOpen)}
+              aria-label="Toggle menu"
             >
               {menuOpen ? (
                 <X
@@ -251,6 +253,78 @@ export default function Navbar({ onTabChange }) {
             </nav>
           </div>
         </motion.header>
+      </AnimatePresence>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.nav
+            initial={{ y: -30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -30, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="sm:hidden fixed top-[64px] left-0 w-full bg-white border-b border-[#FF7F11]/20 z-40 shadow-lg"
+          >
+            <ul className="flex flex-col py-4 px-6 gap-2">
+              {navItems.map((item) => (
+                <li key={item.to}>
+                  <Link
+                    to={item.to}
+                    className="block w-full py-2 px-2 rounded text-[#FF7F11] font-semibold text-lg hover:bg-[#FF7F11]/10 transition"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+              {user && isAdmin && (
+                <li>
+                  <Link
+                    to="/admin-dashboard"
+                    className="block w-full py-2 px-2 rounded text-[#FF1B1C] font-semibold text-lg hover:bg-[#FF1B1C]/10 transition"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                </li>
+              )}
+              {user && !isAdmin && (
+                <li>
+                  <button
+                    onClick={() => {
+                      setIsSidebarOpen(true);
+                      setMenuOpen(false);
+                    }}
+                    className="flex items-center gap-2 w-full py-2 px-2 rounded text-[#FF7F11] font-semibold text-lg hover:bg-[#FF7F11]/10 transition"
+                  >
+                    <UserCircle size={20} /> User Menu
+                  </button>
+                </li>
+              )}
+              <li>
+                {user ? (
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setMenuOpen(false);
+                    }}
+                    className="w-full py-2 px-2 rounded bg-[#FF1B1C] text-white font-semibold text-lg hover:bg-[#FF7F11] hover:text-white transition"
+                  >
+                    Logout
+                  </button>
+                ) : (
+                  <Link
+                    to="/Login"
+                    className="w-full block py-2 px-2 rounded bg-[#FF7F11] text-white font-semibold text-lg hover:bg-[#FF1B1C] transition"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Sign In
+                  </Link>
+                )}
+              </li>
+            </ul>
+          </motion.nav>
+        )}
       </AnimatePresence>
 
       {/* 👉 Sidebar Component Mounted */}
