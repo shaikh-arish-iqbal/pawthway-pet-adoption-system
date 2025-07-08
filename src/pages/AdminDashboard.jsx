@@ -35,6 +35,9 @@ import {
   doc,
   deleteDoc,
   updateDoc,
+  getDoc,
+  query,
+  where,
 } from "firebase/firestore";
 import { signOut } from "firebase/auth";
 import { v4 as uuidv4 } from "uuid";
@@ -62,6 +65,9 @@ export default function AdminDashboard() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [messages, setMessages] = useState([]);
   const [messagesLoading, setMessagesLoading] = useState(false);
+  const [adoptionRequests, setAdoptionRequests] = useState([]);
+  const [loadingRequests, setLoadingRequests] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -93,27 +99,38 @@ export default function AdminDashboard() {
   }, [activeTab]);
 
   useEffect(() => {
-    if (activeTab === "messages") {
-      const fetchMessages = async () => {
-        setMessagesLoading(true);
+    if (activeTab === "applications") {
+      const fetchAdoptionRequests = async () => {
+        setLoadingRequests(true);
         try {
-          const snapshot = await getDocs(collection(db, "contacts"));
-          const msgs = snapshot.docs.map((doc) => ({
+          const formsSnapshot = await getDocs(collection(db, "adoptionForms"));
+          const allForms = formsSnapshot.docs.map((doc) => ({
             id: doc.id,
             ...doc.data(),
           }));
-          // Sort by createdAt descending
-          msgs.sort(
-            (a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)
-          );
-          setMessages(msgs);
-        } catch (e) {
-          toast.error("Failed to load messages: " + e.message);
+
+          const filtered = [];
+          for (const form of allForms) {
+            const petDoc = await getDoc(doc(db, "pets", form.petId));
+            if (
+              petDoc.exists() &&
+              petDoc.data().shelterId === auth.currentUser?.uid
+            ) {
+              filtered.push({
+                ...form,
+                petName: petDoc.data().name,
+                petImage: petDoc.data().imageUrls?.[0] || "",
+              });
+            }
+          }
+          setAdoptionRequests(filtered);
+        } catch (error) {
+          toast.error("Failed to load adoption requests: " + error.message);
         } finally {
-          setMessagesLoading(false);
+          setLoadingRequests(false);
         }
       };
-      fetchMessages();
+      fetchAdoptionRequests();
     }
   }, [activeTab]);
 
@@ -303,7 +320,7 @@ export default function AdminDashboard() {
           />
           <SidebarButton
             icon={Heart}
-            label="Adoptions"
+            label="Adoption Requests"
             onClick={() => setActiveTab("applications")}
             active={activeTab === "applications"}
           />
@@ -389,6 +406,65 @@ export default function AdminDashboard() {
                 </div>
                 <div className="h-24" />
               </>
+            )}
+
+            {activeTab === "applications" && (
+              <div className="space-y-6">
+                <h2 className="text-2xl font-bold text-[#FF1B1C] mb-4">
+                  Adoption Requests
+                </h2>
+                {loadingRequests ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF7F11] mx-auto"></div>
+                  </div>
+                ) : adoptionRequests.length === 0 ? (
+                  <div className="text-center text-[#7a7568]">
+                    No adoption requests found.
+                  </div>
+                ) : (
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {adoptionRequests.map((req) => (
+                      <div
+                        key={req.id}
+                        className="bg-white p-6 rounded-xl shadow border border-[#BEB7A4]/30"
+                      >
+                        <div className="flex gap-4 items-center mb-4">
+                          {req.petImage && (
+                            <img
+                              src={req.petImage}
+                              alt={req.petName}
+                              className="w-20 h-20 object-cover rounded-xl"
+                            />
+                          )}
+                          <div>
+                            <h3 className="text-lg font-bold text-[#FF1B1C]">
+                              {req.petName}
+                            </h3>
+                            <p className="text-sm text-gray-600">
+                              {req.firstName} {req.lastName}
+                            </p>
+                            <p className="text-sm text-gray-600">{req.email}</p>
+                          </div>
+                        </div>
+                        <div className="text-sm text-gray-700 space-y-1">
+                          <p>
+                            <strong>Phone:</strong> {req.phone}
+                          </p>
+                          <p>
+                            <strong>City:</strong> {req.city}
+                          </p>
+                          <p>
+                            <strong>Reason:</strong> {req.reasonForAdoption}
+                          </p>
+                          <p>
+                            <strong>Living:</strong> {req.livingSituation}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
 
             {activeTab === "add" && renderForm("Add New Pet", handleAddPet)}

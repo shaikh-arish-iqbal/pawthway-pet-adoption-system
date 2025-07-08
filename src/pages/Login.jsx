@@ -62,18 +62,18 @@ export default function Login() {
 
       // Attempt to sign in
       const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+              auth,
+              email,
+              password
+            );
 
       // Successfully authenticated
       const user = userCredential.user;
 
       // Check if user exists in Firestore and get their role
       const userDoc = await getDoc(doc(db, "users", user.uid));
-      if (userDoc.exists() && userDoc.data().role === "admin") {
-        navigate("/admin-dashboard");
+        if (userDoc.exists() && userDoc.data().role === "admin") {
+          navigate("/admin-dashboard");
       } else {
         navigate("/"); // redirect normal users to home
       }

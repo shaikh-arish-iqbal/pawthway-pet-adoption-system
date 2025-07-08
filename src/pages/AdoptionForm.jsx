@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { doc, getDoc } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  addDoc,
+  collection,
+  serverTimestamp
+} from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 import { db } from "../firebaseConfig";
 import MyFooter from "../components/Footer";
 import { toast } from "react-toastify";
@@ -99,8 +106,7 @@ const AdoptionForm = () => {
         break;
       case 4:
         if (!formData.reasonForAdoption.trim())
-          newErrors.reasonForAdoption =
-            "Please explain your reason for adoption";
+          newErrors.reasonForAdoption = "Please explain your reason for adoption";
         if (!formData.timeAtHome)
           newErrors.timeAtHome = "Please select time spent at home";
         if (!formData.livingSituation)
@@ -124,12 +130,29 @@ const AdoptionForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateStep(currentStep)) {
-      console.log("Form submitted:", { petId: id, ...formData });
-      toast.success(
-        "Thank you for your adoption application! We'll contact you soon."
-      );
+    if (!validateStep(currentStep)) return;
+
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      const userId = user ? user.uid : null;
+
+      const adoptionData = {
+        ...formData,
+        petId: id,
+        petName: pet?.name || "",
+        userId,
+        timestamp: serverTimestamp(),
+        status: "pending",
+      };
+
+      await addDoc(collection(db, "adoptionForms"), adoptionData);
+
+      toast.success("Thank you for your adoption application! We'll contact you soon.");
       navigate("/Adopt");
+    } catch (error) {
+      console.error("Error submitting adoption form:", error);
+      toast.error("Something went wrong. Please try again later.");
     }
   };
 

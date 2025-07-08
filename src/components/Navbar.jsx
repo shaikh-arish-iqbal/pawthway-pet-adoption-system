@@ -207,7 +207,7 @@ export default function Navbar({ onTabChange }) {
                 >
                   <button
                     onClick={() => setIsSidebarOpen(true)}
-                    className={`flex items-center justify-center ml-1 transition-all duration-300 ${
+                    className={`flex items-center justify-center ml-1 transition-all duration-300 cursor-pointer ${
                       location.pathname === "/" && isDarkTheme
                         ? "text-yellow-400 hover:text-yellow-300"
                         : "text-[#FF7F11] hover:text-[#FF4F11]"
