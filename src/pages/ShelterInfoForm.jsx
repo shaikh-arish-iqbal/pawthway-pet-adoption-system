@@ -3,8 +3,9 @@ import React, { useState, useEffect } from "react";
 import { db, auth } from "../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 // MyFooter is commented out in your original return, so I'll keep it out of the main design focus
-// import MyFooter from "../components/Footer"; 
+// import MyFooter from "../components/Footer";
 
 export default function ShelterInfoForm() {
   const [shelterName, setShelterName] = useState("");
@@ -42,7 +43,7 @@ export default function ShelterInfoForm() {
         }
       } catch (error) {
         console.error("Error fetching shelter info:", error);
-        alert("Failed to load shelter information.");
+        toast.error("Failed to load shelter information.");
       } finally {
         setLoading(false);
       }
@@ -54,7 +55,7 @@ export default function ShelterInfoForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!auth.currentUser) {
-      alert("You must be logged in to save shelter information.");
+      toast.error("You must be logged in to save shelter information.");
       navigate("/login");
       return;
     }
@@ -73,11 +74,11 @@ export default function ShelterInfoForm() {
       };
 
       await setDoc(shelterDocRef, shelterData, { merge: true });
-      alert("Shelter information saved successfully!");
+      toast.success("Shelter information saved successfully!");
       setIsNewShelter(false);
     } catch (error) {
       console.error("Error saving shelter info:", error);
-      alert("Error saving shelter information: " + error.message);
+      toast.error("Error saving shelter information: " + error.message);
     }
   };
 
@@ -95,12 +96,19 @@ export default function ShelterInfoForm() {
       {/* Form Container: Adjusted max-w to accommodate two columns */}
       <div className="max-w-5xl w-full bg-white p-8 sm:p-10 md:p-12 rounded-xl shadow-2xl space-y-8 border border-gray-100">
         <h1 className="text-3xl sm:text-4xl font-extrabold text-[#FF7F11] text-center mb-8">
-          {isNewShelter ? "Add Your Shelter Information" : "Edit Shelter Information"}
+          {isNewShelter
+            ? "Add Your Shelter Information"
+            : "Edit Shelter Information"}
         </h1>
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6"
+        >
           {/* Shelter Name */}
-          <div className="md:col-span-1"> {/* Ensures it takes 1 column on medium screens */}
+          <div className="md:col-span-1">
+            {" "}
+            {/* Ensures it takes 1 column on medium screens */}
             <label
               htmlFor="shelterName"
               className="block text-lg font-semibold text-gray-800 mb-2"
@@ -124,7 +132,8 @@ export default function ShelterInfoForm() {
               htmlFor="location"
               className="block text-lg font-semibold text-gray-800 mb-2"
             >
-              Location (City, State/Province, Country) <span className="text-[#FF1B1C]">*</span>
+              Location (City, State/Province, Country){" "}
+              <span className="text-[#FF1B1C]">*</span>
             </label>
             <input
               type="text"
@@ -175,7 +184,9 @@ export default function ShelterInfoForm() {
           </div>
 
           {/* Website URL - Now included and styled */}
-          <div className="md:col-span-2"> {/* This field spans both columns */}
+          <div className="md:col-span-2">
+            {" "}
+            {/* This field spans both columns */}
             <label
               htmlFor="website"
               className="block text-lg font-semibold text-gray-800 mb-2"
@@ -193,7 +204,9 @@ export default function ShelterInfoForm() {
           </div>
 
           {/* Shelter Description */}
-          <div className="md:col-span-2"> {/* This field spans both columns */}
+          <div className="md:col-span-2">
+            {" "}
+            {/* This field spans both columns */}
             <label
               htmlFor="description"
               className="block text-lg font-semibold text-gray-800 mb-2"

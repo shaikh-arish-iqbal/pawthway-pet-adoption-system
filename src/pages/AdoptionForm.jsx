@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import MyFooter from "../components/Footer";
+import { toast } from "react-toastify";
 
 const AdoptionForm = () => {
   const { id } = useParams();
@@ -125,7 +126,9 @@ const AdoptionForm = () => {
     e.preventDefault();
     if (validateStep(currentStep)) {
       console.log("Form submitted:", { petId: id, ...formData });
-      alert("Thank you for your adoption application! We'll contact you soon.");
+      toast.success(
+        "Thank you for your adoption application! We'll contact you soon."
+      );
       navigate("/Adopt");
     }
   };
@@ -472,9 +475,10 @@ const AdoptionForm = () => {
 
                 <div>
                   <label className="block text-[#7a7568] font-semibold mb-2">
-                    Number of people in household *
+                    Household Size *
                   </label>
-                  <select
+                  <input
+                    type="text"
                     name="householdSize"
                     value={formData.householdSize}
                     onChange={handleInputChange}
@@ -483,14 +487,7 @@ const AdoptionForm = () => {
                         ? "border-red-500"
                         : "border-[#BEB7A4] focus:border-[#FF7F11]"
                     }`}
-                  >
-                    <option value="">Select...</option>
-                    <option value="1">1 person</option>
-                    <option value="2">2 people</option>
-                    <option value="3">3 people</option>
-                    <option value="4">4 people</option>
-                    <option value="5+">5+ people</option>
-                  </select>
+                  />
                   {errors.householdSize && (
                     <p className="text-red-500 text-sm mt-1">
                       {errors.householdSize}
@@ -502,30 +499,17 @@ const AdoptionForm = () => {
                   <label className="block text-[#7a7568] font-semibold mb-2">
                     Do you have children? *
                   </label>
-                  <div className="space-y-2">
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="hasChildren"
-                        value="yes"
-                        checked={formData.hasChildren === "yes"}
-                        onChange={handleInputChange}
-                        className="mr-2 text-black"
-                      />
-                      Yes
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="hasChildren"
-                        value="no"
-                        checked={formData.hasChildren === "no"}
-                        onChange={handleInputChange}
-                        className="mr-2 text-black"
-                      />
-                      No
-                    </label>
-                  </div>
+                  <input
+                    type="text"
+                    name="hasChildren"
+                    value={formData.hasChildren}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-2 text-black focus:ring-[#FF7F11]/30 ${
+                      errors.hasChildren
+                        ? "border-red-500"
+                        : "border-[#BEB7A4] focus:border-[#FF7F11]"
+                    }`}
+                  />
                   {errors.hasChildren && (
                     <p className="text-red-500 text-sm mt-1">
                       {errors.hasChildren}
@@ -537,30 +521,17 @@ const AdoptionForm = () => {
                   <label className="block text-[#7a7568] font-semibold mb-2">
                     Do you have other pets? *
                   </label>
-                  <div className="space-y-2">
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="hasOtherPets"
-                        value="yes"
-                        checked={formData.hasOtherPets === "yes"}
-                        onChange={handleInputChange}
-                        className="mr-2 text-black"
-                      />
-                      Yes
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="hasOtherPets"
-                        value="no"
-                        checked={formData.hasOtherPets === "no"}
-                        onChange={handleInputChange}
-                        className="mr-2 text-black "
-                      />
-                      No
-                    </label>
-                  </div>
+                  <input
+                    type="text"
+                    name="hasOtherPets"
+                    value={formData.hasOtherPets}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-2 text-black focus:ring-[#FF7F11]/30 ${
+                      errors.hasOtherPets
+                        ? "border-red-500"
+                        : "border-[#BEB7A4] focus:border-[#FF7F11]"
+                    }`}
+                  />
                   {errors.hasOtherPets && (
                     <p className="text-red-500 text-sm mt-1">
                       {errors.hasOtherPets}
@@ -570,14 +541,13 @@ const AdoptionForm = () => {
 
                 <div>
                   <label className="block text-[#7a7568] font-semibold mb-2">
-                    Previous pet experience *
+                    Describe your pet experience *
                   </label>
-                  <textarea
+                  <input
+                    type="text"
                     name="petExperience"
                     value={formData.petExperience}
                     onChange={handleInputChange}
-                    placeholder="Describe your experience with pets..."
-                    rows="4"
                     className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-2 text-black focus:ring-[#FF7F11]/30 ${
                       errors.petExperience
                         ? "border-red-500"
@@ -606,14 +576,13 @@ const AdoptionForm = () => {
 
                 <div>
                   <label className="block text-[#7a7568] font-semibold mb-2">
-                    Why do you want to adopt {pet.name}? *
+                    Reason for Adoption *
                   </label>
-                  <textarea
+                  <input
+                    type="text"
                     name="reasonForAdoption"
                     value={formData.reasonForAdoption}
                     onChange={handleInputChange}
-                    placeholder="Tell us why you want to adopt this pet..."
-                    rows="4"
                     className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none focus:ring-2 text-black focus:ring-[#FF7F11]/30 ${
                       errors.reasonForAdoption
                         ? "border-red-500"
@@ -629,9 +598,10 @@ const AdoptionForm = () => {
 
                 <div>
                   <label className="block text-[#7a7568] font-semibold mb-2">
-                    How much time do you spend at home? *
+                    Time spent at home *
                   </label>
-                  <select
+                  <input
+                    type="text"
                     name="timeAtHome"
                     value={formData.timeAtHome}
                     onChange={handleInputChange}
@@ -640,13 +610,7 @@ const AdoptionForm = () => {
                         ? "border-red-500"
                         : "border-[#BEB7A4] focus:border-[#FF7F11]"
                     }`}
-                  >
-                    <option value="">Select...</option>
-                    <option value="Most of the day">Most of the day</option>
-                    <option value="Part of the day">Part of the day</option>
-                    <option value="Evenings only">Evenings only</option>
-                    <option value="Weekends only">Weekends only</option>
-                  </select>
+                  />
                   {errors.timeAtHome && (
                     <p className="text-red-500 text-sm mt-1">
                       {errors.timeAtHome}
@@ -656,9 +620,10 @@ const AdoptionForm = () => {
 
                 <div>
                   <label className="block text-[#7a7568] font-semibold mb-2">
-                    Living situation *
+                    Living Situation *
                   </label>
-                  <select
+                  <input
+                    type="text"
                     name="livingSituation"
                     value={formData.livingSituation}
                     onChange={handleInputChange}
@@ -667,14 +632,7 @@ const AdoptionForm = () => {
                         ? "border-red-500"
                         : "border-[#BEB7A4] focus:border-[#FF7F11]"
                     }`}
-                  >
-                    <option value="">Select...</option>
-                    <option value="Own home">Own home</option>
-                    <option value="Rent house">Rent house</option>
-                    <option value="Rent apartment">Rent apartment</option>
-                    <option value="Condo">Condo</option>
-                    <option value="Other">Other</option>
-                  </select>
+                  />
                   {errors.livingSituation && (
                     <p className="text-red-500 text-sm mt-1">
                       {errors.livingSituation}
@@ -684,46 +642,19 @@ const AdoptionForm = () => {
               </motion.div>
             )}
 
-            {/* Navigation Buttons */}
-            <div className="flex justify-between mt-8">
-              {currentStep > 1 && (
-                <motion.button
-                  type="button"
-                  onClick={prevStep}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="bg-[#BEB7A4] text-white px-8 py-3 rounded-xl font-semibold hover:bg-[#a8a194] transition-colors"
-                >
-                  Previous
-                </motion.button>
-              )}
-
-              {currentStep < 4 ? (
-                <motion.button
-                  type="button"
-                  onClick={nextStep}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="ml-auto bg-gradient-to-r from-[#FF7F11] to-[#FF1B1C] text-white px-8 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300"
-                >
-                  Next Step
-                </motion.button>
-              ) : (
-                <motion.button
-                  type="submit"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="ml-auto bg-gradient-to-r from-[#FF7F11] to-[#FF1B1C] text-white px-8 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300"
-                >
-                  Submit Application
-                </motion.button>
-              )}
+            <div className="mt-8 text-center">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                type="submit"
+                className="bg-[#FF7F11] text-white px-6 py-3 rounded-full font-semibold hover:bg-[#e56e0e] transition-colors"
+              >
+                Submit Application
+              </motion.button>
             </div>
           </form>
         </motion.div>
       </div>
-
-      <MyFooter />
     </div>
   );
 };

@@ -14,10 +14,13 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdoptionForm from "./pages/AdoptionForm";
 import FAQPage from "./pages/FAQPage";
 import UserDashboard from "./pages/UserDashboard";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   return (
     <>
+      <ToastContainer position="bottom-right" />
       <BrowserRouter>
         <Navbar />
         <Routes>

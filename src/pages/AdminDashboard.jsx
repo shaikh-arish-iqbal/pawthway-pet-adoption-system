@@ -40,6 +40,7 @@ import { signOut } from "firebase/auth";
 import { v4 as uuidv4 } from "uuid";
 import ShelterInfoForm from "./ShelterInfoForm";
 import MyFooter from "../components/Footer";
+import { toast } from "react-toastify";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -80,7 +81,7 @@ export default function AdminDashboard() {
         );
         setPets(userPets);
       } catch (e) {
-        alert("Failed to load pets: " + e.message);
+        toast.error("Failed to load pets: " + e.message);
       } finally {
         setLoading(false);
       }
@@ -107,7 +108,7 @@ export default function AdminDashboard() {
           );
           setMessages(msgs);
         } catch (e) {
-          alert("Failed to load messages: " + e.message);
+          toast.error("Failed to load messages: " + e.message);
         } finally {
           setMessagesLoading(false);
         }
@@ -146,7 +147,7 @@ export default function AdminDashboard() {
       !breed ||
       !personality
     ) {
-      return alert(
+      return toast.error(
         "Please fill all required fields and select at least one image"
       );
     }
@@ -182,10 +183,10 @@ export default function AdminDashboard() {
         createdAt: new Date(),
       });
 
-      alert("Pet added successfully!");
+      toast.success("Pet added successfully!");
       resetForm();
     } catch (error) {
-      alert("Error adding pet: " + error.message);
+      toast.error("Error adding pet: " + error.message);
     } finally {
       setLoading(false);
       setUploadProgress(0);
@@ -206,10 +207,10 @@ export default function AdminDashboard() {
           await deleteObject(ref(storage, path));
         }
       }
-      alert("Pet deleted successfully!");
+      toast.success("Pet deleted successfully!");
       setPets((prev) => prev.filter((p) => p.id !== petId));
     } catch (error) {
-      alert("Error deleting pet: " + error.message);
+      toast.error("Error deleting pet: " + error.message);
     } finally {
       setLoading(false);
     }
@@ -217,7 +218,7 @@ export default function AdminDashboard() {
 
   const handleEditClick = (pet) => {
     if (pet.shelterId !== auth.currentUser?.uid) {
-      return alert("You are not authorized to edit this pet.");
+      return toast.error("You are not authorized to edit this pet.");
     }
     setEditingPet(pet);
     setPetName(pet.name || "");
@@ -270,11 +271,11 @@ export default function AdminDashboard() {
         updatedAt: new Date(),
       });
 
-      alert("Pet updated successfully!");
+      toast.success("Pet updated successfully!");
       resetForm();
       setActiveTab("edit");
     } catch (error) {
-      alert("Error updating pet: " + error.message);
+      toast.error("Error updating pet: " + error.message);
     } finally {
       setLoading(false);
       setUploadProgress(0);
@@ -378,12 +379,12 @@ export default function AdminDashboard() {
                   <Card
                     icon={Grid}
                     title="Manage Categories"
-                    onClick={() => alert("Coming soon")}
+                    onClick={() => toast.info("Coming soon")}
                   />
                   <Card
                     icon={BarChart}
                     title="Generate Reports"
-                    onClick={() => alert("Coming soon")}
+                    onClick={() => toast.info("Coming soon")}
                   />
                 </div>
                 <div className="h-24" />

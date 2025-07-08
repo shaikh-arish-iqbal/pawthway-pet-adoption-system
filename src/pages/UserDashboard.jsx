@@ -14,7 +14,7 @@ import {
   Upload,
   X,
   CheckCircle,
-  Pencil
+  Pencil,
 } from "lucide-react";
 import { auth, db, storage } from "../firebaseConfig";
 import {
@@ -23,16 +23,17 @@ import {
   getDocs,
   doc,
   updateDoc,
-  deleteDoc
+  deleteDoc,
 } from "firebase/firestore";
 import {
   ref,
   uploadBytes,
   getDownloadURL,
-  deleteObject
+  deleteObject,
 } from "firebase/storage";
 import { signOut } from "firebase/auth";
 import { v4 as uuidv4 } from "uuid";
+import { toast } from "react-toastify";
 
 export default function UserDashboard() {
   const navigate = useNavigate();
@@ -76,7 +77,7 @@ export default function UserDashboard() {
 
   const handleAddPet = async () => {
     if (!petName || !breed || !age || !description || petImages.length === 0) {
-      return alert("All fields are required.");
+      return toast.error("All fields are required.");
     }
     setLoading(true);
     let imageUrls = [];
@@ -84,10 +85,18 @@ export default function UserDashboard() {
       const imgRef = ref(storage, `pets/${uuidv4()}-${file.name}`);
       await uploadBytes(imgRef, file);
       imageUrls.push(await getDownloadURL(imgRef));
-      setUploadProgress(prev => prev + 100 / petImages.length);
+      setUploadProgress((prev) => prev + 100 / petImages.length);
     }
-    await addDoc(collection(db, "pets"), { userId, name: petName, breed, age, description, imageUrls, createdAt: new Date() });
-    alert("Pet added!");
+    await addDoc(collection(db, "pets"), {
+      userId,
+      name: petName,
+      breed,
+      age,
+      description,
+      imageUrls,
+      createdAt: new Date(),
+    });
+    toast.success("Pet added!");
     resetForm();
     setActiveTab("dashboard");
     setLoading(false);
@@ -113,8 +122,15 @@ export default function UserDashboard() {
         updatedUrls.push(await getDownloadURL(imgRef));
       }
     }
-    await updateDoc(doc(db, "pets", editingPet.id), { name: petName, breed, age, description, imageUrls: updatedUrls, updatedAt: new Date() });
-    alert("Pet updated!");
+    await updateDoc(doc(db, "pets", editingPet.id), {
+      name: petName,
+      breed,
+      age,
+      description,
+      imageUrls: updatedUrls,
+      updatedAt: new Date(),
+    });
+    toast.success("Pet updated!");
     resetForm();
     setActiveTab("edit");
     setLoading(false);
@@ -127,17 +143,29 @@ export default function UserDashboard() {
       const path = decodeURIComponent(new URL(url).pathname.split("/o/")[1]);
       await deleteObject(ref(storage, path));
     }
-    setPets(p => p.filter(x => x.id !== id));
-    alert("Deleted!");
+    setPets((p) => p.filter((x) => x.id !== id));
+    toast.success("Deleted!");
   };
 
-  const removeImage = idx => setPetImages(ps => ps.filter((_, i) => i !== idx));
+  const removeImage = (idx) =>
+    setPetImages((ps) => ps.filter((_, i) => i !== idx));
 
   const renderForm = (title, onSubmit) => (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl shadow-xl p-8 max-w-3xl mx-auto">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white rounded-2xl shadow-xl p-8 max-w-3xl mx-auto"
+    >
       <h2 className="text-3xl font-bold text-[#FF1B1C] mb-6">{title}</h2>
       <div className="border-2 border-dashed border-[#BEB7A4] rounded-xl p-6 text-center mb-4">
-        <input type="file" multiple accept="image/*" id="image-upload" className="hidden" onChange={e => setPetImages([...e.target.files])} />
+        <input
+          type="file"
+          multiple
+          accept="image/*"
+          id="image-upload"
+          className="hidden"
+          onChange={(e) => setPetImages([...e.target.files])}
+        />
         <label htmlFor="image-upload" className="cursor-pointer">
           <Upload className="w-12 h-12 text-[#BEB7A4] mx-auto mb-2" />
           <p className="text-[#7a7568]">Upload pet images</p>
@@ -147,8 +175,16 @@ export default function UserDashboard() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
           {petImages.map((file, i) => (
             <div key={i} className="relative">
-              <img src={URL.createObjectURL(file)} alt="" className="w-full h-24 object-cover rounded-lg" />
-              <button type="button" className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1" onClick={() => removeImage(i)}>
+              <img
+                src={URL.createObjectURL(file)}
+                alt=""
+                className="w-full h-24 object-cover rounded-lg"
+              />
+              <button
+                type="button"
+                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
+                onClick={() => removeImage(i)}
+              >
                 <X size={16} />
               </button>
             </div>
@@ -158,36 +194,69 @@ export default function UserDashboard() {
       {uploadProgress > 0 && (
         <div className="mb-4">
           <div className="bg-gray-200 rounded-full h-2">
-            <div style={{ width: `${uploadProgress}%` }} className="bg-[#FF7F11] h-2 rounded-full" />
+            <div
+              style={{ width: `${uploadProgress}%` }}
+              className="bg-[#FF7F11] h-2 rounded-full"
+            />
           </div>
-          <p className="text-sm text-[#7a7568] mt-1">Uploading... {Math.round(uploadProgress)}%</p>
+          <p className="text-sm text-[#7a7568] mt-1">
+            Uploading... {Math.round(uploadProgress)}%
+          </p>
         </div>
       )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        {["Pet Name","Breed","Age"].map((label, idx) => {
+        {["Pet Name", "Breed", "Age"].map((label, idx) => {
           const val = [petName, breed, age][idx];
           const setter = [setPetName, setBreed, setAge][idx];
           return (
             <div key={label}>
-              <label className="block text-[#7a7568] font-semibold mb-1">{label}</label>
-              <input className="w-full px-4 py-3 rounded-xl border-2 border-[#BEB7A4] focus:ring-[#FF7F11]/30 text-black" value={val} onChange={e => setter(e.target.value)} />
+              <label className="block text-[#7a7568] font-semibold mb-1">
+                {label}
+              </label>
+              <input
+                className="w-full px-4 py-3 rounded-xl border-2 border-[#BEB7A4] focus:ring-[#FF7F11]/30 text-black"
+                value={val}
+                onChange={(e) => setter(e.target.value)}
+              />
             </div>
           );
         })}
       </div>
       <div className="mb-6">
-        <label className="block text-[#7a7568] font-semibold mb-1">Description</label>
-        <textarea rows={3} className="w-full px-4 py-3 rounded-xl border-2 border-[#BEB7A4] focus:ring-[#FF7F11]/30 text-black" value={description} onChange={e => setDescription(e.target.value)} />
+        <label className="block text-[#7a7568] font-semibold mb-1">
+          Description
+        </label>
+        <textarea
+          rows={3}
+          className="w-full px-4 py-3 rounded-xl border-2 border-[#BEB7A4] focus:ring-[#FF7F11]/30 text-black"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
       </div>
       <div className="flex gap-4">
-        <motion.button whileHover={{ scale:1.02 }} whileTap={{ scale:.98 }} onClick={onSubmit} disabled={loading}
-          className="flex-1 bg-gradient-to-r from-[#FF7F11] to-[#FF1B1C] text-white py-3 rounded-xl font-bold flex justify-center items-center gap-2 disabled:opacity-50">
-          {loading ? <span className="animate-spin border-b-2 h-5 w-5 inline-block"></span> : <CheckCircle size={20}/>}
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={onSubmit}
+          disabled={loading}
+          className="flex-1 bg-gradient-to-r from-[#FF7F11] to-[#FF1B1C] text-white py-3 rounded-xl font-bold flex justify-center items-center gap-2 disabled:opacity-50"
+        >
+          {loading ? (
+            <span className="animate-spin border-b-2 h-5 w-5 inline-block"></span>
+          ) : (
+            <CheckCircle size={20} />
+          )}
           {editingPet ? "Update Pet" : "Add Pet"}
         </motion.button>
         {editingPet && (
-          <motion.button whileHover={{ scale:1.02 }} whileTap={{ scale:.98 }} onClick={resetForm}
-            className="px-6 py-3 bg-gray-300 text-black rounded-xl font-bold">Cancel</motion.button>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={resetForm}
+            className="px-6 py-3 bg-gray-300 text-black rounded-xl font-bold"
+          >
+            Cancel
+          </motion.button>
         )}
       </div>
     </motion.div>
@@ -196,97 +265,190 @@ export default function UserDashboard() {
   /** Profile form logic **/
   const [userData, setUserData] = useState(null);
   const [editingProfile, setEditingProfile] = useState(false);
-  const [aadhaarError,setAadhaarError]=useState("");
+  const [aadhaarError, setAadhaarError] = useState("");
   useEffect(() => {
-    if(activeTab==="profile"){
-      const u=auth.currentUser;
-      if(u){
-        getDocs(doc(db,'users',u.uid)).then(docSnap => setUserData(docSnap.data()));
+    if (activeTab === "profile") {
+      const u = auth.currentUser;
+      if (u) {
+        getDocs(doc(db, "users", u.uid)).then((docSnap) =>
+          setUserData(docSnap.data())
+        );
       }
     }
   }, [activeTab]);
-  const saveProfile=async ()=>{
-    if(userData.aadhaar?.length!==12){ setAadhaarError("Aadhaar must be 12 digits"); return;}
-    await updateDoc(doc(db,'users',auth.currentUser.uid),userData);
+  const saveProfile = async () => {
+    if (userData.aadhaar?.length !== 12) {
+      setAadhaarError("Aadhaar must be 12 digits");
+      return;
+    }
+    await updateDoc(doc(db, "users", auth.currentUser.uid), userData);
     setEditingProfile(false);
   };
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-[#FFFFFC] via-[#f8f7f4] to-[#BEB7A4]">
-      <motion.aside initial={{x:-300}} animate={{x:0}} className="w-64 bg-black/90 backdrop-blur-xl p-6 text-white space-y-4">
-  <div className="text-3xl font-bold">PAWTHWAY🐾</div>
-  {[
-    ["Dashboard", Home, "dashboard"],
-    ["My Adoptions", FileText, "adoptions"],
-    ["Favorites", Heart, "favorites"],
-    ["Profile", User, "profile"]
-  ].map(([label, Icon, key])=>(
-    <SidebarButton key={key} label={label} icon={Icon} active={activeTab===key} onClick={()=>setActiveTab(key)} />
-  ))}
-  <SidebarButton label="Logout" icon={LogOut} onClick={handleLogout} danger />
-</motion.aside>
-
+      <motion.aside
+        initial={{ x: -300 }}
+        animate={{ x: 0 }}
+        className="w-64 bg-black/90 backdrop-blur-xl p-6 text-white space-y-4"
+      >
+        <div className="text-3xl font-bold">PAWTHWAY🐾</div>
+        {[
+          ["Dashboard", Home, "dashboard"],
+          ["My Adoptions", FileText, "adoptions"],
+          ["Favorites", Heart, "favorites"],
+          ["Profile", User, "profile"],
+        ].map(([label, Icon, key]) => (
+          <SidebarButton
+            key={key}
+            label={label}
+            icon={Icon}
+            active={activeTab === key}
+            onClick={() => setActiveTab(key)}
+          />
+        ))}
+        <SidebarButton
+          label="Logout"
+          icon={LogOut}
+          onClick={handleLogout}
+          danger
+        />
+      </motion.aside>
 
       <main className="flex-1 p-8 overflow-auto">
-        <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-black text-[#FF1B1C] mb-8">User Dashboard</h1>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-7xl mx-auto"
+        >
+          <h1 className="text-4xl font-black text-[#FF1B1C] mb-8">
+            User Dashboard
+          </h1>
 
           {activeTab === "dashboard" && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card icon={PlusCircle} title="Add a New Pet" onClick={()=>setActiveTab("add")} />
-              <Card icon={Edit} title="Edit Pet" onClick={()=>setActiveTab("edit")} />
-              <Card icon={Trash2} title="Remove Pet" onClick={()=>setActiveTab("delete")} />
-              <Card icon={Heart} title="Favorites" onClick={()=>setActiveTab("favorites")} />
-              <Card icon={FileText} title="My Adoptions" onClick={()=>setActiveTab("adoptions")} />
+              <Card
+                icon={PlusCircle}
+                title="Add a New Pet"
+                onClick={() => setActiveTab("add")}
+              />
+              <Card
+                icon={Edit}
+                title="Edit Pet"
+                onClick={() => setActiveTab("edit")}
+              />
+              <Card
+                icon={Trash2}
+                title="Remove Pet"
+                onClick={() => setActiveTab("delete")}
+              />
+              <Card
+                icon={Heart}
+                title="Favorites"
+                onClick={() => setActiveTab("favorites")}
+              />
+              <Card
+                icon={FileText}
+                title="My Adoptions"
+                onClick={() => setActiveTab("adoptions")}
+              />
             </div>
           )}
 
           {activeTab === "add" && renderForm("Add New Pet", handleAddPet)}
           {activeTab === "edit" && !editingPet && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {pets.map(p=>(
-                <Card key={p.id} icon={Edit} title={p.name} onClick={()=>handleEditClick(p)}/>
+              {pets.map((p) => (
+                <Card
+                  key={p.id}
+                  icon={Edit}
+                  title={p.name}
+                  onClick={() => handleEditClick(p)}
+                />
               ))}
             </div>
           )}
-          {activeTab === "edit" && editingPet && renderForm("Edit Pet", handleUpdatePet)}
+          {activeTab === "edit" &&
+            editingPet &&
+            renderForm("Edit Pet", handleUpdatePet)}
           {activeTab === "delete" && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {pets.map(p=>(
-                <Card key={p.id} icon={Trash2} title={p.name} onClick={()=>handleDelete(p.id,p.imageUrls)}/>
+              {pets.map((p) => (
+                <Card
+                  key={p.id}
+                  icon={Trash2}
+                  title={p.name}
+                  onClick={() => handleDelete(p.id, p.imageUrls)}
+                />
               ))}
             </div>
           )}
-          {activeTab === "adoptions" && <p className="text-[#7a7568]">You have no adoptions yet.</p>}
-          {activeTab === "favorites" && <p className="text-[#7a7568]">No favorites added yet.</p>}
+          {activeTab === "adoptions" && (
+            <p className="text-[#7a7568]">You have no adoptions yet.</p>
+          )}
+          {activeTab === "favorites" && (
+            <p className="text-[#7a7568]">No favorites added yet.</p>
+          )}
 
           {activeTab === "profile" && userData && (
-            <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} className="bg-white rounded-2xl shadow-xl p-8 max-w-4xl mx-auto relative">
-              <h2 className="text-3xl font-bold text-[#FF1B1C] mb-6">Profile</h2>
-              <button onClick={()=>setEditingProfile(!editingProfile)}
-                className="absolute top-5 right-5 text-[#FF7F11] hover:text-[#FF1B1C]">
-                <Pencil size={22}/>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-2xl shadow-xl p-8 max-w-4xl mx-auto relative"
+            >
+              <h2 className="text-3xl font-bold text-[#FF1B1C] mb-6">
+                Profile
+              </h2>
+              <button
+                onClick={() => setEditingProfile(!editingProfile)}
+                className="absolute top-5 right-5 text-[#FF7F11] hover:text-[#FF1B1C]"
+              >
+                <Pencil size={22} />
               </button>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                {["name","surname","phone","aadhaar","gender","dob","address"].map((field)=>(<>
-                  <div key={field}>
-                    <label className="block text-[#7a7568] font-semibold mb-1">{field.charAt(0).toUpperCase()+field.slice(1)}</label>
-                    <input
-                      name={field}
-                      value={userData[field]||""}
-                      onChange={e=>setUserData({...userData,[field]:e.target.value})}
-                      readOnly={!editingProfile}
-                      className={`w-full px-4 py-2 rounded-lg border text-black placeholder:text-gray-400 ${
-                        editingProfile?"bg-white border-[#FF7F11] focus:outline-[#FF7F11]":"bg-gray-100"
-                      }`}
-                    />
-                    {field==="aadhaar"&&aadhaarError &&<p className="text-red-600 text-sm mt-1">{aadhaarError}</p>}
-                  </div>
-                </>))}
+                {[
+                  "name",
+                  "surname",
+                  "phone",
+                  "aadhaar",
+                  "gender",
+                  "dob",
+                  "address",
+                ].map((field) => (
+                  <>
+                    <div key={field}>
+                      <label className="block text-[#7a7568] font-semibold mb-1">
+                        {field.charAt(0).toUpperCase() + field.slice(1)}
+                      </label>
+                      <input
+                        name={field}
+                        value={userData[field] || ""}
+                        onChange={(e) =>
+                          setUserData({ ...userData, [field]: e.target.value })
+                        }
+                        readOnly={!editingProfile}
+                        className={`w-full px-4 py-2 rounded-lg border text-black placeholder:text-gray-400 ${
+                          editingProfile
+                            ? "bg-white border-[#FF7F11] focus:outline-[#FF7F11]"
+                            : "bg-gray-100"
+                        }`}
+                      />
+                      {field === "aadhaar" && aadhaarError && (
+                        <p className="text-red-600 text-sm mt-1">
+                          {aadhaarError}
+                        </p>
+                      )}
+                    </div>
+                  </>
+                ))}
               </div>
               {editingProfile && (
-                <motion.button whileHover={{scale:1.02}} whileTap={{scale:.98}} onClick={saveProfile}
-                  className="mt-4 w-full bg-gradient-to-r from-[#FF7F11] to-[#FF1B1C] text-white py-3 rounded-xl">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={saveProfile}
+                  className="mt-4 w-full bg-gradient-to-r from-[#FF7F11] to-[#FF1B1C] text-white py-3 rounded-xl"
+                >
                   Save Profile
                 </motion.button>
               )}
@@ -310,7 +472,8 @@ function SidebarButton({ icon: Icon, label, active, onClick, danger }) {
           : danger
           ? "hover:bg-red-500/20 text-red-400"
           : "hover:bg-white/10 text-white"
-      }`}>
+      }`}
+    >
       <Icon size={20} />
       <span>{label}</span>
     </motion.button>

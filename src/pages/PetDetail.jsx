@@ -180,6 +180,61 @@ const PetDetail = () => {
                   />
                 </AnimatePresence>
 
+                {/* Left/Right Arrows */}
+                {imageUrls.length > 1 && (
+                  <>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentImageIndex(
+                          (currentImageIndex - 1 + imageUrls.length) %
+                            imageUrls.length
+                        );
+                      }}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-[#FF1B1C] rounded-full p-2 shadow transition z-10"
+                      aria-label="Previous image"
+                    >
+                      <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M15 19l-7-7 7-7"
+                        />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentImageIndex(
+                          (currentImageIndex + 1) % imageUrls.length
+                        );
+                      }}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-[#FF1B1C] rounded-full p-2 shadow transition z-10"
+                      aria-label="Next image"
+                    >
+                      <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </button>
+                  </>
+                )}
+
                 {/* Image Navigation */}
                 {imageUrls.length > 1 && (
                   <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
