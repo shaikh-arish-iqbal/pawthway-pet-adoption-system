@@ -330,7 +330,7 @@ export default function AdminDashboard() {
             onClick={() => setActiveTab("messages")}
             active={activeTab === "messages"}
           />
-          <SidebarButton
+          {/* <SidebarButton
             icon={Users}
             label="Users"
             onClick={() => setActiveTab("users")}
@@ -341,7 +341,7 @@ export default function AdminDashboard() {
             label="Settings"
             onClick={() => setActiveTab("settings")}
             active={activeTab === "settings"}
-          />
+          /> */}
           <SidebarButton
             icon={FileText}
             label="Shelter Info"

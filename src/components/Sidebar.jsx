@@ -30,6 +30,8 @@ export default function Sidebar({ isOpen, onClose, onTabChange }) {
       navigate("/");
     } else if (value === "dashboard") {
       navigate("/user-dashboard");
+    } else if (value === "favourites") {
+      navigate("/favourites")
     } else if (value === "profile") {
       navigate("/user-profile");
     } else {

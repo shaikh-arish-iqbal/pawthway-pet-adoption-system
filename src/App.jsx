@@ -14,6 +14,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdoptionForm from "./pages/AdoptionForm";
 import FAQPage from "./pages/FAQPage";
 import UserDashboard from "./pages/UserDashboard";
+import Favourites from "./pages/Favourites";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -37,6 +38,7 @@ function App() {
           <Route path="/faq" element={<FAQPage />} />
           <Route path="/user-profile" element={<UserProfile />} />
           <Route path="/user-dashboard" element={<UserDashboard />} />
+          <Route path="/favourites" element={<Favourites />} />
         </Routes>
       </BrowserRouter>
     </>
