@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { db } from "../firebaseConfig"; 
+import { db } from "../firebaseConfig";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
 import Navbar from "../components/Navbar";
 import MyFooter from "../components/Footer";
@@ -48,16 +48,16 @@ export default function Contact() {
 
   return (
     <div className="bg-[#FFFFFC] min-h-screen flex flex-col justify-between">
-
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="flex flex-col items-center text-center px-6 pt-30"
+        className="flex flex-col items-center text-center px-6 pt-20"
       >
-        <h1 className="text-4xl font-bold text-[#000000] mb-2">Contact Us</h1>
+        <h1 className="text-4xl font-bold text-[#FF7F11] mb-2">Contact Us</h1>
         <p className="text-[#BEB7A4] max-w-xl">
-          We'd love to hear from you! Whether you're looking to adopt or have a question, drop us a message.
+          We'd love to hear from you! Whether you're looking to adopt or have a
+          question, drop us a message.
         </p>
 
         <motion.form

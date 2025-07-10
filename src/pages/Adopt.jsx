@@ -5,12 +5,21 @@ import { collection, getDocs } from "firebase/firestore";
 import MyFooter from "../components/Footer";
 import PetCard from "../components/PetCard";
 import PetFilter from "../components/PetFilter";
+import { useLocation } from "react-router-dom";
 
 export default function Adopt() {
   const [pets, setPets] = useState([]);
   const [filters, setFilters] = useState({});
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const location = useLocation();
+
+  // Set initial searchQuery from URL param
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const search = params.get("search") || "";
+    setSearchQuery(search);
+  }, [location.search]);
 
   useEffect(() => {
     const fetchPets = async () => {

@@ -35,10 +35,15 @@ import {
   doc,
   deleteDoc,
   updateDoc,
+  getDoc,
+  query,
+  where,
 } from "firebase/firestore";
 import { signOut } from "firebase/auth";
 import { v4 as uuidv4 } from "uuid";
 import ShelterInfoForm from "./ShelterInfoForm";
+import MyFooter from "../components/Footer";
+import { toast } from "react-toastify";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -58,6 +63,11 @@ export default function AdminDashboard() {
   const [editingPet, setEditingPet] = useState(null);
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [messages, setMessages] = useState([]);
+  const [messagesLoading, setMessagesLoading] = useState(false);
+  const [adoptionRequests, setAdoptionRequests] = useState([]);
+  const [loadingRequests, setLoadingRequests] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -77,7 +87,7 @@ export default function AdminDashboard() {
         );
         setPets(userPets);
       } catch (e) {
-        alert("Failed to load pets: " + e.message);
+        toast.error("Failed to load pets: " + e.message);
       } finally {
         setLoading(false);
       }
@@ -85,6 +95,42 @@ export default function AdminDashboard() {
 
     if (["edit", "delete", "applications"].includes(activeTab)) {
       fetchPets();
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (activeTab === "applications") {
+      const fetchAdoptionRequests = async () => {
+        setLoadingRequests(true);
+        try {
+          const formsSnapshot = await getDocs(collection(db, "adoptionForms"));
+          const allForms = formsSnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+
+          const filtered = [];
+          for (const form of allForms) {
+            const petDoc = await getDoc(doc(db, "pets", form.petId));
+            if (
+              petDoc.exists() &&
+              petDoc.data().shelterId === auth.currentUser?.uid
+            ) {
+              filtered.push({
+                ...form,
+                petName: petDoc.data().name,
+                petImage: petDoc.data().imageUrls?.[0] || "",
+              });
+            }
+          }
+          setAdoptionRequests(filtered);
+        } catch (error) {
+          toast.error("Failed to load adoption requests: " + error.message);
+        } finally {
+          setLoadingRequests(false);
+        }
+      };
+      fetchAdoptionRequests();
     }
   }, [activeTab]);
 
@@ -118,7 +164,7 @@ export default function AdminDashboard() {
       !breed ||
       !personality
     ) {
-      return alert(
+      return toast.error(
         "Please fill all required fields and select at least one image"
       );
     }
@@ -154,10 +200,10 @@ export default function AdminDashboard() {
         createdAt: new Date(),
       });
 
-      alert("Pet added successfully!");
+      toast.success("Pet added successfully!");
       resetForm();
     } catch (error) {
-      alert("Error adding pet: " + error.message);
+      toast.error("Error adding pet: " + error.message);
     } finally {
       setLoading(false);
       setUploadProgress(0);
@@ -178,10 +224,10 @@ export default function AdminDashboard() {
           await deleteObject(ref(storage, path));
         }
       }
-      alert("Pet deleted successfully!");
+      toast.success("Pet deleted successfully!");
       setPets((prev) => prev.filter((p) => p.id !== petId));
     } catch (error) {
-      alert("Error deleting pet: " + error.message);
+      toast.error("Error deleting pet: " + error.message);
     } finally {
       setLoading(false);
     }
@@ -189,7 +235,7 @@ export default function AdminDashboard() {
 
   const handleEditClick = (pet) => {
     if (pet.shelterId !== auth.currentUser?.uid) {
-      return alert("You are not authorized to edit this pet.");
+      return toast.error("You are not authorized to edit this pet.");
     }
     setEditingPet(pet);
     setPetName(pet.name || "");
@@ -242,11 +288,11 @@ export default function AdminDashboard() {
         updatedAt: new Date(),
       });
 
-      alert("Pet updated successfully!");
+      toast.success("Pet updated successfully!");
       resetForm();
       setActiveTab("edit");
     } catch (error) {
-      alert("Error updating pet: " + error.message);
+      toast.error("Error updating pet: " + error.message);
     } finally {
       setLoading(false);
       setUploadProgress(0);
@@ -265,15 +311,6 @@ export default function AdminDashboard() {
         animate={{ x: 0 }}
         className="w-64 bg-black/90 backdrop-blur-xl text-white p-6 space-y-6 shadow-2xl"
       >
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-2xl font-bold flex items-center space-x-3"
-        >
-          <span className="text-3xl">🐾</span>
-          <span>Pawthway</span>
-        </motion.div>
-
         <nav className="flex flex-col space-y-2">
           <SidebarButton
             icon={Home}
@@ -283,7 +320,7 @@ export default function AdminDashboard() {
           />
           <SidebarButton
             icon={Heart}
-            label="Adoptions"
+            label="Adoption Requests"
             onClick={() => setActiveTab("applications")}
             active={activeTab === "applications"}
           />
@@ -293,7 +330,7 @@ export default function AdminDashboard() {
             onClick={() => setActiveTab("messages")}
             active={activeTab === "messages"}
           />
-          <SidebarButton
+          {/* <SidebarButton
             icon={Users}
             label="Users"
             onClick={() => setActiveTab("users")}
@@ -304,7 +341,7 @@ export default function AdminDashboard() {
             label="Settings"
             onClick={() => setActiveTab("settings")}
             active={activeTab === "settings"}
-          />
+          /> */}
           <SidebarButton
             icon={FileText}
             label="Shelter Info"
@@ -322,162 +359,306 @@ export default function AdminDashboard() {
       </motion.aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-8 overflow-y-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-7xl mx-auto"
-        >
-          <h1 className="text-4xl font-black text-[#FF1B1C] mb-8">
-            Admin Dashboard
-          </h1>
+      <div className="flex-1 flex flex-col">
+        <main className="flex-1 p-8 overflow-y-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-7xl mx-auto"
+          >
+            <h1 className="text-4xl font-black text-[#FF1B1C] mb-8">
+              Admin Dashboard
+            </h1>
 
-          {activeTab === "dashboard" && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card
-                icon={PlusCircle}
-                title="Add a New Pet"
-                onClick={() => setActiveTab("add")}
-              />
-              <Card
-                icon={Edit}
-                title="Edit Pet"
-                onClick={() => setActiveTab("edit")}
-              />
-              <Card
-                icon={Trash2}
-                title="Remove Pet"
-                onClick={() => setActiveTab("delete")}
-              />
-              <Card
-                icon={FileText}
-                title="View Applications"
-                onClick={() => setActiveTab("applications")}
-              />
-              <Card
-                icon={Grid}
-                title="Manage Categories"
-                onClick={() => alert("Coming soon")}
-              />
-              <Card
-                icon={BarChart}
-                title="Generate Reports"
-                onClick={() => alert("Coming soon")}
-              />
-            </div>
-          )}
-
-          {activeTab === "add" && renderForm("Add New Pet", handleAddPet)}
-
-          {activeTab === "edit" && !editingPet && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-[#FF1B1C]">
-                Select Pet to Edit
-              </h2>
-              {loading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF7F11] mx-auto"></div>
+            {activeTab === "dashboard" && (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <Card
+                    icon={PlusCircle}
+                    title="Add a New Pet"
+                    onClick={() => setActiveTab("add")}
+                  />
+                  <Card
+                    icon={Edit}
+                    title="Edit Pet"
+                    onClick={() => setActiveTab("edit")}
+                  />
+                  <Card
+                    icon={Trash2}
+                    title="Remove Pet"
+                    onClick={() => setActiveTab("delete")}
+                  />
+                  <Card
+                    icon={FileText}
+                    title="View Applications"
+                    onClick={() => setActiveTab("applications")}
+                  />
+                  <Card
+                    icon={Grid}
+                    title="Manage Categories"
+                    onClick={() => toast.info("Coming soon")}
+                  />
+                  <Card
+                    icon={BarChart}
+                    title="Generate Reports"
+                    onClick={() => toast.info("Coming soon")}
+                  />
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {pets.map((pet) => (
-                    <motion.div
-                      key={pet.id}
-                      whileHover={{ scale: 1.02 }}
-                      className="bg-white rounded-xl shadow-lg p-6 border border-[#BEB7A4]/20"
-                    >
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <h3 className="font-bold text-lg text-[#FF1B1C]">
-                            {pet.name}
-                          </h3>
-                          <p className="text-sm text-[#7a7568]">
-                            {pet.type} - {pet.breed}
+                <div className="h-24" />
+              </>
+            )}
+
+            {activeTab === "applications" && (
+              <div className="space-y-6">
+                <h2 className="text-2xl font-bold text-[#FF1B1C] mb-4">
+                  Adoption Requests
+                </h2>
+                {loadingRequests ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF7F11] mx-auto"></div>
+                  </div>
+                ) : adoptionRequests.length === 0 ? (
+                  <div className="text-center text-[#7a7568]">
+                    No adoption requests found.
+                  </div>
+                ) : (
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {adoptionRequests.map((req) => (
+                      <div
+                        key={req.id}
+                        className="bg-white p-6 rounded-xl shadow border border-[#BEB7A4]/30"
+                      >
+                        <div className="flex gap-4 items-center mb-4">
+                          {req.petImage && (
+                            <img
+                              src={req.petImage}
+                              alt={req.petName}
+                              className="w-20 h-20 object-cover rounded-xl"
+                            />
+                          )}
+                          <div>
+                            <h3 className="text-lg font-bold text-[#FF1B1C]">
+                              {req.petName}
+                            </h3>
+                            <p className="text-sm text-gray-600">
+                              {req.firstName} {req.lastName}
+                            </p>
+                            <p className="text-sm text-gray-600">{req.email}</p>
+                          </div>
+                        </div>
+                        <div className="text-sm text-gray-700 space-y-1">
+                          <p>
+                            <strong>Phone:</strong> {req.phone}
+                          </p>
+                          <p>
+                            <strong>City:</strong> {req.city}
+                          </p>
+                          <p>
+                            <strong>Reason:</strong> {req.reasonForAdoption}
+                          </p>
+                          <p>
+                            <strong>Living:</strong> {req.livingSituation}
                           </p>
                         </div>
-                        <button
-                          onClick={() => handleEditClick(pet)}
-                          className="bg-[#FF7F11] text-white px-4 py-2 rounded-lg hover:bg-[#FF1B1C] transition-colors"
-                        >
-                          Edit
-                        </button>
                       </div>
-                      {pet.imageUrls && pet.imageUrls.length > 0 && (
-                        <img
-                          src={pet.imageUrls[0]}
-                          alt={pet.name}
-                          className="w-full h-32 object-cover rounded-lg mb-3"
-                        />
-                      )}
-                      <p className="text-sm text-[#7a7568] line-clamp-2">
-                        {pet.description}
-                      </p>
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
-          {activeTab === "edit" &&
-            editingPet &&
-            renderForm("Edit Pet", handleUpdatePet)}
+            {activeTab === "add" && renderForm("Add New Pet", handleAddPet)}
 
-          {activeTab === "delete" && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-[#FF1B1C]">Remove Pets</h2>
-              {loading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF7F11] mx-auto"></div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {pets.map((pet) => (
-                    <motion.div
-                      key={pet.id}
-                      whileHover={{ scale: 1.02 }}
-                      className="bg-white rounded-xl shadow-lg p-6 border border-[#BEB7A4]/20"
-                    >
-                      <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <h3 className="font-bold text-lg text-[#FF1B1C]">
-                            {pet.name}
-                          </h3>
-                          <p className="text-sm text-[#7a7568]">
-                            {pet.type} - {pet.breed}
-                          </p>
+            {activeTab === "edit" && !editingPet && (
+              <div className="space-y-6">
+                <h2 className="text-2xl font-bold text-[#FF1B1C]">
+                  Select Pet to Edit
+                </h2>
+                {loading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF7F11] mx-auto"></div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {pets.map((pet) => (
+                      <motion.div
+                        key={pet.id}
+                        whileHover={{ scale: 1.02 }}
+                        className="bg-white rounded-xl shadow-lg p-6 border border-[#BEB7A4]/20"
+                      >
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h3 className="font-bold text-lg text-[#FF1B1C]">
+                              {pet.name}
+                            </h3>
+                            <p className="text-sm text-[#7a7568]">
+                              {pet.type} - {pet.breed}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => handleEditClick(pet)}
+                            className="bg-[#FF7F11] text-white px-4 py-2 rounded-lg hover:bg-[#FF1B1C] transition-colors"
+                          >
+                            Edit
+                          </button>
                         </div>
-                        <button
-                          onClick={() => handleDeletePet(pet.id, pet.imageUrls)}
-                          className="bg-[#FF1B1C] text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                      {pet.imageUrls && pet.imageUrls.length > 0 && (
-                        <img
-                          src={pet.imageUrls[0]}
-                          alt={pet.name}
-                          className="w-full h-32 object-cover rounded-lg mb-3"
-                        />
-                      )}
-                      <p className="text-sm text-[#7a7568] line-clamp-2">
-                        {pet.description}
-                      </p>
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+                        {pet.imageUrls && pet.imageUrls.length > 0 && (
+                          <img
+                            src={pet.imageUrls[0]}
+                            alt={pet.name}
+                            className="w-full h-32 object-cover rounded-lg mb-3"
+                          />
+                        )}
+                        <p className="text-sm text-[#7a7568] line-clamp-2">
+                          {pet.description}
+                        </p>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
-          {activeTab === "shelter-info" && (
-            <div className="space-y-6">
-              <ShelterInfoForm />
-            </div>
-          )}
-        </motion.div>
-      </main>
+            {activeTab === "edit" &&
+              editingPet &&
+              renderForm("Edit Pet", handleUpdatePet)}
+
+            {activeTab === "delete" && (
+              <div className="space-y-6">
+                <h2 className="text-2xl font-bold text-[#FF1B1C]">
+                  Remove Pets
+                </h2>
+                {loading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF7F11] mx-auto"></div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {pets.map((pet) => (
+                      <motion.div
+                        key={pet.id}
+                        whileHover={{ scale: 1.02 }}
+                        className="bg-white rounded-xl shadow-lg p-6 border border-[#BEB7A4]/20"
+                      >
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h3 className="font-bold text-lg text-[#FF1B1C]">
+                              {pet.name}
+                            </h3>
+                            <p className="text-sm text-[#7a7568]">
+                              {pet.type} - {pet.breed}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() =>
+                              handleDeletePet(pet.id, pet.imageUrls)
+                            }
+                            className="bg-[#FF1B1C] text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                        {pet.imageUrls && pet.imageUrls.length > 0 && (
+                          <img
+                            src={pet.imageUrls[0]}
+                            alt={pet.name}
+                            className="w-full h-32 object-cover rounded-lg mb-3"
+                          />
+                        )}
+                        <p className="text-sm text-[#7a7568] line-clamp-2">
+                          {pet.description}
+                        </p>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === "shelter-info" && (
+              <div className="space-y-6">
+                <ShelterInfoForm />
+              </div>
+            )}
+
+            {activeTab === "messages" && (
+              <div className="space-y-6">
+                <h2 className="text-2xl font-bold text-[#FF1B1C] mb-4">
+                  Contact Messages
+                </h2>
+                {messagesLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF7F11] mx-auto"></div>
+                  </div>
+                ) : messages.length === 0 ? (
+                  <div className="text-center text-[#7a7568]">
+                    No messages found.
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full bg-white rounded-xl shadow border border-[#BEB7A4]/30">
+                      <thead>
+                        <tr>
+                          <th className="px-4 py-2 text-left text-[#FF7F11]">
+                            Name
+                          </th>
+                          <th className="px-4 py-2 text-left text-[#FF7F11]">
+                            Email
+                          </th>
+                          <th className="px-4 py-2 text-left text-[#FF7F11]">
+                            Phone
+                          </th>
+                          <th className="px-4 py-2 text-left text-[#FF7F11]">
+                            Subject
+                          </th>
+                          <th className="px-4 py-2 text-left text-[#FF7F11]">
+                            Message
+                          </th>
+                          <th className="px-4 py-2 text-left text-[#FF7F11]">
+                            Date
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {messages.map((msg) => (
+                          <tr
+                            key={msg.id}
+                            className="border-t border-[#BEB7A4]/20"
+                          >
+                            <td className="px-4 py-2 text-black">{msg.name}</td>
+                            <td className="px-4 py-2 text-black">
+                              {msg.email}
+                            </td>
+                            <td className="px-4 py-2 text-black">
+                              {msg.phone}
+                            </td>
+                            <td className="px-4 py-2 text-black">
+                              {msg.subject}
+                            </td>
+                            <td className="px-4 py-2 max-w-xs text-black break-words">
+                              {msg.message}
+                            </td>
+                            <td className="px-4 py-2 text-xs text-black">
+                              {msg.createdAt?.seconds
+                                ? new Date(
+                                    msg.createdAt.seconds * 1000
+                                  ).toLocaleString()
+                                : ""}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+          </motion.div>
+        </main>
+
+        {/* Footer */}
+        <MyFooter />
+      </div>
     </div>
   );
 
@@ -759,7 +940,8 @@ export default function AdminDashboard() {
   }
 }
 
-function Card({ icon: Icon, title, onClick }) {
+function Card({ icon, title, onClick }) {
+  const Icon = icon;
   return (
     <motion.div
       whileHover={{ scale: 1.05, y: -5 }}
@@ -780,7 +962,8 @@ function Card({ icon: Icon, title, onClick }) {
   );
 }
 
-function SidebarButton({ icon: Icon, label, onClick, active, danger }) {
+function SidebarButton({ icon, label, onClick, active, danger }) {
+  const Icon = icon;
   return (
     <motion.button
       whileHover={{ x: 5 }}

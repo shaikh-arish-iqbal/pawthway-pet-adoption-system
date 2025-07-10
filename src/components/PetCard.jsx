@@ -126,10 +126,11 @@ const PetCard = ({ pets: propPets, cityFilter }) => {
             onHoverStart={() => setHoveredPet(pet.id)}
             onHoverEnd={() => setHoveredPet(null)}
             className="group cursor-pointer"
+            onClick={() => handleAdoptClick(pet.id)}
           >
-            <div className="bg-white rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 group-hover:shadow-2xl border border-gray-100">
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 group-hover:shadow-2xl border border-gray-100 flex flex-col h-full">
               {/* Image Container */}
-              <div className="relative overflow-hidden h-64">
+              <div className="relative overflow-hidden aspect-[4/3] min-h-[200px] max-h-[220px] flex items-center justify-center bg-gray-100">
                 <motion.img
                   whileHover={{ scale: 1.1 }}
                   transition={{ duration: 0.3 }}
@@ -138,29 +139,25 @@ const PetCard = ({ pets: propPets, cityFilter }) => {
                     "https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=400&h=300&fit=crop"
                   }
                   alt={pet.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-center"
                 />
-
                 {/* Overlay with pet info */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: hoveredPet === pet.id ? 1 : 0 }}
                   className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"
                 />
-
                 {/* Pet type badge */}
                 <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 text-sm font-semibold text-[#FF1B1C] flex items-center gap-1">
                   <span>{getPetTypeIcon(pet.type)}</span>
                   <span>{pet.type || "Pet"}</span>
                 </div>
-
                 {/* Location badge */}
                 {pet.city && (
                   <div className="absolute top-4 right-4 bg-[#FF7F11]/90 backdrop-blur-sm text-white rounded-full px-3 py-1 text-sm font-semibold">
                     📍 {pet.city}
                   </div>
                 )}
-
                 {/* Hover overlay content */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -181,76 +178,47 @@ const PetCard = ({ pets: propPets, cityFilter }) => {
                         Gender: {pet.gender}
                       </div>
                     )}
-                    {pet.size && (
-                      <div className="text-sm font-medium">
-                        Size: {pet.size}
-                      </div>
-                    )}
                   </div>
                 </motion.div>
               </div>
-
               {/* Content */}
-              <div className="p-6">
-                <div className="mb-4">
-                  <h3 className="text-xl font-bold text-[#FF1B1C] mb-2 group-hover:text-[#FF7F11] transition-colors">
+              <div className="p-6 flex flex-col flex-1 justify-between">
+                <div className="mb-2">
+                  <h3 className="text-xl font-bold text-[#FF1B1C] mb-1 group-hover:text-[#FF7F11] transition-colors">
                     {pet.name || "Unnamed Pet"}
                   </h3>
-                  <p className="text-[#7a7568] text-sm mb-1">
-                    {pet.breed || "Mixed Breed"}
-                  </p>
+                  {pet.breed && (
+                    <p className="text-[#7a7568] text-sm mb-1">{pet.breed}</p>
+                  )}
                   {pet.age && (
                     <p className="text-[#7a7568] text-sm">
-                      {getAgeText(pet.age)}
+                      Age: {getAgeText(pet.age)}
+                    </p>
+                  )}
+                  {pet.gender && (
+                    <p className="text-[#7a7568] text-sm">
+                      Gender: {pet.gender}
                     </p>
                   )}
                 </div>
-
-                {/* Description */}
-                {pet.description && (
-                  <p className="text-[#7a7568] text-sm mb-4 line-clamp-2">
-                    {pet.description}
-                  </p>
-                )}
-
-                {/* Tags */}
+                {/* Tags/Characteristics */}
                 {pet.tags && pet.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {pet.tags.slice(0, 3).map((tag, idx) => (
-                      <span
-                        key={idx}
-                        className="bg-[#BEB7A4]/20 text-[#7a7568] text-xs px-2 py-1 rounded-full"
-                      >
-                        {tag}
-                      </span>
-                    ))}
+                  <div className="flex flex-col gap-1 mb-2">
+                    <span className="text-xs font-semibold text-[#FF1B1C] mb-1">
+                      Characteristics
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {pet.tags.slice(0, 3).map((tag, idx) => (
+                        <span
+                          key={idx}
+                          className="bg-[#BEB7A4]/20 text-[#7a7568] text-xs px-2 py-1 rounded-full"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 )}
-
-                {/* Action Button */}
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleAdoptClick(pet.id)}
-                  className="w-full bg-gradient-to-r from-[#FF7F11] to-[#FF1B1C] text-white py-3 rounded-xl font-bold hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 group/btn"
-                >
-                  <span>Adopt {pet.name || "Me"}</span>
-                  <motion.svg
-                    className="w-5 h-5"
-                    animate={{ x: [0, 5, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17 8l4 4m0 0l-4 4m4-4H3"
-                    />
-                  </motion.svg>
-                </motion.button>
               </div>
             </div>
           </motion.div>

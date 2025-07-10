@@ -1,26 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Menu, X, Sun, Moon } from "lucide-react";
+import { Menu, X, Sun, Moon, UserCircle } from "lucide-react";
 import { auth, db } from "../firebaseConfig";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
+import Sidebar from "./Sidebar"; // 👈 Make sure this component exists
 
-export default function Navbar() {
+export default function Navbar({ onTabChange }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // 👈 Sidebar toggle
+
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
-
       if (currentUser) {
         const docRef = doc(db, "users", currentUser.uid);
         const docSnap = await getDoc(docRef);
@@ -36,29 +36,17 @@ export default function Navbar() {
     return () => unsubscribe();
   }, []);
 
-  // Handle scroll effect and navbar visibility
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       const isScrolled = currentScrollY > 20;
-
       setScrolled(isScrolled);
-
-      // Hide navbar when scrolling down, show when scrolling up
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        setIsVisible(false);
-      } else {
-        setIsVisible(true);
-      }
-
-      setLastScrollY(currentScrollY);
     };
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY]);
+  }, []);
 
-  // Apply theme to body when it changes
   useEffect(() => {
     if (location.pathname === "/") {
       if (isDarkTheme) {
@@ -85,14 +73,14 @@ export default function Navbar() {
   ];
 
   return (
-    <AnimatePresence>
-      {isVisible && (
+    <>
+      <AnimatePresence>
         <motion.header
           initial={{ y: -80, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -80, opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className={`fixed z-50 w-full px-4 sm:px-8 py-3 transition-all duration-500 ${
+          className={`fixed z-50 w-full px-4 sm:px-8 pt-4.5 pb-4.5 transition-all duration-500 ${
             location.pathname === "/" && isDarkTheme
               ? scrolled
                 ? "bg-black/80 backdrop-blur-xl border-b border-yellow-400/30 shadow-2xl shadow-yellow-400/10"
@@ -111,12 +99,12 @@ export default function Navbar() {
                     ? "text-yellow-400 drop-shadow-lg"
                     : "text-[#FF7F11] drop-shadow-lg"
                 }`}
+                onClick={() => setMenuOpen(false)}
               >
                 PAWTHWAY🐾
               </Link>
             </motion.div>
 
-            {/* Theme Toggle Button */}
             {location.pathname === "/" && (
               <motion.button
                 whileHover={{ scale: 1.1, rotate: 180 }}
@@ -132,12 +120,12 @@ export default function Navbar() {
               </motion.button>
             )}
 
-            {/* Hamburger menu (mobile) */}
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               className="sm:hidden focus:outline-none p-1.5 rounded-lg backdrop-blur-sm bg-white/10 border border-white/20"
               onClick={() => setMenuOpen(!menuOpen)}
+              aria-label="Toggle menu"
             >
               {menuOpen ? (
                 <X
@@ -160,7 +148,6 @@ export default function Navbar() {
               )}
             </motion.button>
 
-            {/* Desktop nav */}
             <nav className="hidden sm:flex space-x-6 items-center">
               {navItems.map((item) => (
                 <motion.div
@@ -188,7 +175,7 @@ export default function Navbar() {
                 </motion.div>
               ))}
 
-              {/* Dashboard link for admin */}
+              {/* Admin Dashboard */}
               {user && isAdmin && (
                 <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.95 }}>
                   <Link
@@ -211,7 +198,28 @@ export default function Navbar() {
                 </motion.div>
               )}
 
-              {/* Logout/Login buttons */}
+              {/* User Dashboard Icon + Sidebar Trigger */}
+              {user && !isAdmin && (
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center"
+                >
+                  <button
+                    onClick={() => setIsSidebarOpen(true)}
+                    className={`flex items-center justify-center ml-1 transition-all duration-300 cursor-pointer ${
+                      location.pathname === "/" && isDarkTheme
+                        ? "text-yellow-400 hover:text-yellow-300"
+                        : "text-[#FF7F11] hover:text-[#FF4F11]"
+                    }`}
+                    title="User Menu"
+                  >
+                    <UserCircle size={22} strokeWidth={2} />
+                  </button>
+                </motion.div>
+              )}
+
+              {/* Logout/Login */}
               {user ? (
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -244,98 +252,87 @@ export default function Navbar() {
               )}
             </nav>
           </div>
+        </motion.header>
+      </AnimatePresence>
 
-          {/* Mobile menu */}
-          {menuOpen && (
-            <motion.nav
-              initial={{ opacity: 0, y: -20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -20, scale: 0.95 }}
-              transition={{ duration: 0.3 }}
-              className={`sm:hidden mt-4 flex flex-col space-y-3 text-center ${
-                location.pathname === "/" && isDarkTheme
-                  ? "bg-black/80 backdrop-blur-xl border border-yellow-400/20"
-                  : "bg-white/80 backdrop-blur-xl border border-[#FF7F11]/20"
-              } rounded-2xl p-4 shadow-2xl`}
-            >
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.nav
+            initial={{ y: -30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -30, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="sm:hidden fixed top-[64px] left-0 w-full bg-white border-b border-[#FF7F11]/20 z-40 shadow-lg"
+          >
+            <ul className="flex flex-col py-4 px-6 gap-2">
               {navItems.map((item) => (
-                <motion.div
-                  key={item.to}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
+                <li key={item.to}>
                   <Link
                     to={item.to}
+                    className="block w-full py-2 px-2 rounded text-[#FF7F11] font-semibold text-lg hover:bg-[#FF7F11]/10 transition"
                     onClick={() => setMenuOpen(false)}
-                    className={`font-semibold text-base transition-all duration-300 px-3 py-2 rounded-lg ${
-                      location.pathname === "/" && isDarkTheme
-                        ? "text-white hover:text-yellow-400 hover:bg-yellow-400/10"
-                        : "text-[#7a7568] hover:text-[#FF7F11] hover:bg-[#FF7F11]/10"
-                    }`}
                   >
                     {item.label}
                   </Link>
-                </motion.div>
+                </li>
               ))}
-
-              {/* Dashboard link (mobile) */}
               {user && isAdmin && (
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
+                <li>
                   <Link
                     to="/admin-dashboard"
+                    className="block w-full py-2 px-2 rounded text-[#FF1B1C] font-semibold text-lg hover:bg-[#FF1B1C]/10 transition"
                     onClick={() => setMenuOpen(false)}
-                    className={`font-semibold text-base transition-all duration-300 px-3 py-2 rounded-lg ${
-                      location.pathname === "/" && isDarkTheme
-                        ? "text-white hover:text-yellow-400 hover:bg-yellow-400/10"
-                        : "text-[#7a7568] hover:text-[#FF7F11] hover:bg-[#FF7F11]/10"
-                    }`}
                   >
                     Dashboard
                   </Link>
-                </motion.div>
+                </li>
               )}
-
-              {user ? (
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => {
-                    handleLogout();
-                    setMenuOpen(false);
-                  }}
-                  className={`inline-block mx-auto px-4 py-2 font-semibold rounded-full transition-all duration-300 backdrop-blur-sm border text-sm ${
-                    location.pathname === "/" && isDarkTheme
-                      ? "bg-yellow-400/90 text-black hover:bg-yellow-400 border-yellow-400/30"
-                      : "bg-[#FF1B1C]/90 text-white hover:bg-[#FF1B1C] border-[#FF1B1C]/30"
-                  }`}
-                >
-                  Logout
-                </motion.button>
-              ) : (
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
+              {user && !isAdmin && (
+                <li>
+                  <button
+                    onClick={() => {
+                      setIsSidebarOpen(true);
+                      setMenuOpen(false);
+                    }}
+                    className="flex items-center gap-2 w-full py-2 px-2 rounded text-[#FF7F11] font-semibold text-lg hover:bg-[#FF7F11]/10 transition"
+                  >
+                    <UserCircle size={20} /> User Menu
+                  </button>
+                </li>
+              )}
+              <li>
+                {user ? (
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setMenuOpen(false);
+                    }}
+                    className="w-full py-2 px-2 rounded bg-[#FF1B1C] text-white font-semibold text-lg hover:bg-[#FF7F11] hover:text-white transition"
+                  >
+                    Logout
+                  </button>
+                ) : (
                   <Link
                     to="/Login"
+                    className="w-full block py-2 px-2 rounded bg-[#FF7F11] text-white font-semibold text-lg hover:bg-[#FF1B1C] transition"
                     onClick={() => setMenuOpen(false)}
-                    className={`inline-block mx-auto px-4 py-2 font-semibold rounded-full transition-all duration-300 backdrop-blur-sm border text-sm ${
-                      location.pathname === "/" && isDarkTheme
-                        ? "bg-yellow-400/90 text-black hover:bg-yellow-400 border-yellow-400/30"
-                        : "bg-[#FF7F11]/90 text-white hover:bg-[#FF7F11] border-[#FF7F11]/30"
-                    }`}
                   >
                     Sign In
                   </Link>
-                </motion.div>
-              )}
-            </motion.nav>
-          )}
-        </motion.header>
-      )}
-    </AnimatePresence>
+                )}
+              </li>
+            </ul>
+          </motion.nav>
+        )}
+      </AnimatePresence>
+
+      {/* 👉 Sidebar Component Mounted */}
+      <Sidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        onTabChange={onTabChange}
+      />
+    </>
   );
 }

@@ -1,10 +1,12 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { db, storage } from "../firebaseConfig";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getDownloadURL, ref } from "firebase/storage";
 import MyFooter from "../components/Footer";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { Heart } from "lucide-react";
 
 const PetDetail = () => {
   const { id } = useParams();
@@ -13,6 +15,48 @@ const PetDetail = () => {
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageUrls, setImageUrls] = useState([]);
+  const [isFavourite, setIsFavourite] = useState(false);
+  const [user, setUser] = useState(null);
+
+  const auth = getAuth();
+
+  // ✅ Set current user and check favourite status
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        setUser(firebaseUser);
+        const favRef = doc(db, "users", firebaseUser.uid, "favorites", id);
+        const favSnap = await getDoc(favRef);
+        setIsFavourite(favSnap.exists());
+        console.log("isFavourite:", favSnap.exists());
+      }
+    });
+
+    return () => unsubscribe();
+  }, [id]);
+
+  // ✅ Toggle favourite
+  const handleToggleFavourite = async () => {
+    if (!user || !pet) return;
+
+    const favRef = doc(db, "users", user.uid, "favorites", id);
+
+    if (isFavourite) {
+      await deleteDoc(favRef);
+      console.log("Removed from favourites:", user.uid, id);
+      setIsFavourite(false);
+    } else {
+      await setDoc(favRef, {
+        petId: id,
+        petName: pet.name,
+        petImage: imageUrls[0] || "",
+        timestamp: Date.now(),
+      });
+      console.log("Added to favourites:", user.uid, id);
+      setIsFavourite(true);
+    }
+  };
+
 
   useEffect(() => {
     const fetchPet = async () => {
@@ -122,7 +166,7 @@ const PetDetail = () => {
   }
 
   return (
-    <div className="h-screen bg-gradient-to-br from-[#FFFFFC] via-[#f8f7f4] to-[#BEB7A4] flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-[#FFFFFC] via-[#f8f7f4] to-[#BEB7A4] flex flex-col">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -180,6 +224,61 @@ const PetDetail = () => {
                   />
                 </AnimatePresence>
 
+                {/* Left/Right Arrows */}
+                {imageUrls.length > 1 && (
+                  <>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentImageIndex(
+                          (currentImageIndex - 1 + imageUrls.length) %
+                            imageUrls.length
+                        );
+                      }}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-[#FF1B1C] rounded-full p-2 shadow transition z-10"
+                      aria-label="Previous image"
+                    >
+                      <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M15 19l-7-7 7-7"
+                        />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentImageIndex(
+                          (currentImageIndex + 1) % imageUrls.length
+                        );
+                      }}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-[#FF1B1C] rounded-full p-2 shadow transition z-10"
+                      aria-label="Next image"
+                    >
+                      <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </button>
+                  </>
+                )}
+
                 {/* Image Navigation */}
                 {imageUrls.length > 1 && (
                   <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
@@ -221,8 +320,27 @@ const PetDetail = () => {
             )}
           </div>
 
+
+
           {/* Right Side - Details Section */}
-          <div className="lg:w-1/2 flex flex-col h-96 lg:h-full overflow-hidden">
+          <div className="lg:w-1/2 flex flex-col h-96 lg:h-full overflow-hidden relative">
+
+
+          <div className="absolute top-4 right-4 z-20">
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={handleToggleFavourite}
+              className="bg-white/90 backdrop-blur-sm p-2 rounded-full shadow hover:bg-white transition"
+            >
+              {isFavourite ? (
+                <Heart className="text-[#FF1B1C] fill-[#FF1B1C]" />
+              ) : (
+                <Heart className="text-[#FF1B1C]" />
+              )}
+            </motion.button>
+          </div>
+
+
             <div className="flex-1 overflow-y-auto p-6 lg:p-8">
               {/* Header */}
               <motion.div
@@ -378,6 +496,9 @@ const PetDetail = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Footer */}
+      <MyFooter />
     </div>
   );
 };
