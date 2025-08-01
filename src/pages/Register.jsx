@@ -112,14 +112,14 @@ export default function Register() {
   return (
     <div>
       <div
-        className={`min-h-screen flex items-center justify-center px-6 py-8 ${
+        className={`min-h-screen flex items-center justify-center px-4 py-4 ${
           isDarkMode
             ? "bg-gradient-to-br from-[#000000] via-[#1a1a1a] to-[#2d2d2d]"
             : "bg-gradient-to-br from-[#FFFFFC] via-[#f8f7f4] to-[#BEB7A4]"
         }`}
       >
         <div
-          className={`flex flex-col lg:flex-row w-full max-w-7xl shadow-2xl rounded-3xl overflow-hidden backdrop-blur-sm ${
+          className={`flex flex-col lg:flex-row w-full max-w-6xl shadow-2xl rounded-2xl overflow-hidden backdrop-blur-sm ${
             isDarkMode
               ? "bg-gradient-to-br from-gray-900/95 via-gray-800/95 to-yellow-900/30 border border-yellow-500/20"
               : "bg-white/95 border border-gray-200/50"
@@ -132,11 +132,11 @@ export default function Register() {
             }}
           >
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-            <div className="absolute bottom-8 left-8 right-8 text-white">
-              <h3 className="text-2xl font-bold mb-2">
+            <div className="absolute bottom-6 left-6 right-6 text-white">
+              <h3 className="text-xl font-bold mb-2">
                 Join Our Pet-Loving Community
               </h3>
-              <p className="text-white/80">
+              <p className="text-white/80 text-sm">
                 Start your journey to find the perfect companion
               </p>
             </div>
@@ -149,17 +149,17 @@ export default function Register() {
                 : "bg-white/95 text-[#000000]"
             }`}
           >
-            <div className="w-full p-8 sm:p-12 lg:p-16 flex flex-col justify-center min-h-full">
-              <div className="text-center mb-8">
+            <div className="w-full p-6 sm:p-8 lg:p-10 flex flex-col justify-center min-h-full">
+              <div className="text-center mb-6">
                 <h2
-                  className={`text-4xl lg:text-5xl font-black mb-4 ${
+                  className={`text-3xl lg:text-4xl font-black mb-3 ${
                     isDarkMode ? "text-yellow-400" : "text-[#FF7F11]"
                   }`}
                 >
                   Create Account
                 </h2>
                 <p
-                  className={`text-lg ${
+                  className={`text-base ${
                     isDarkMode ? "text-gray-300" : "text-gray-600"
                   }`}
                 >
@@ -169,7 +169,7 @@ export default function Register() {
 
               {error && (
                 <div
-                  className={`text-sm p-4 rounded-xl mb-6 text-center border ${
+                  className={`text-sm p-3 rounded-lg mb-4 text-center border ${
                     isDarkMode
                       ? "bg-red-600/90 text-white border-red-500/30"
                       : "bg-red-50 text-red-700 border-red-200"
@@ -181,11 +181,11 @@ export default function Register() {
 
               <form
                 onSubmit={handleRegister}
-                className="space-y-6 w-full max-w-md mx-auto"
+                className="space-y-4 w-full max-w-md mx-auto"
               >
                 <div>
                   <label
-                    className={`block text-sm font-semibold mb-3 ${
+                    className={`block text-sm font-semibold mb-2 ${
                       isDarkMode ? "text-gray-200" : "text-gray-700"
                     }`}
                   >
@@ -195,7 +195,7 @@ export default function Register() {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className={`w-full p-4 border-2 rounded-xl focus:ring-4 focus:ring-opacity-30 transition-all duration-300 ${
+                    className={`w-full p-3 border-2 rounded-lg focus:ring-2 focus:ring-opacity-30 transition-all duration-300 ${
                       isDarkMode
                         ? "border-yellow-600/50 bg-gradient-to-r from-gray-800 to-yellow-900/20 text-white focus:ring-yellow-400 focus:border-yellow-400"
                         : "border-gray-300 bg-white text-gray-900 focus:ring-[#FF7F11] focus:border-[#FF7F11]"
@@ -208,7 +208,7 @@ export default function Register() {
 
                 <div>
                   <label
-                    className={`block text-sm font-semibold mb-3 ${
+                    className={`block text-sm font-semibold mb-2 ${
                       isDarkMode ? "text-gray-200" : "text-gray-700"
                     }`}
                   >
@@ -218,7 +218,7 @@ export default function Register() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className={`w-full p-4 border-2 rounded-xl focus:ring-4 focus:ring-opacity-30 transition-all duration-300 ${
+                    className={`w-full p-3 border-2 rounded-lg focus:ring-2 focus:ring-opacity-30 transition-all duration-300 ${
                       isDarkMode
                         ? "border-yellow-600/50 bg-gradient-to-r from-gray-800 to-yellow-900/20 text-white focus:ring-yellow-400 focus:border-yellow-400"
                         : "border-gray-300 bg-white text-gray-900 focus:ring-[#FF7F11] focus:border-[#FF7F11]"
@@ -231,7 +231,7 @@ export default function Register() {
 
                 <div>
                   <label
-                    className={`block text-sm font-semibold mb-3 ${
+                    className={`block text-sm font-semibold mb-2 ${
                       isDarkMode ? "text-gray-200" : "text-gray-700"
                     }`}
                   >
@@ -242,7 +242,7 @@ export default function Register() {
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className={`w-full p-4 border-2 rounded-xl focus:ring-4 focus:ring-opacity-30 transition-all duration-300 pr-12 ${
+                      className={`w-full p-3 border-2 rounded-lg focus:ring-2 focus:ring-opacity-30 transition-all duration-300 pr-12 ${
                         isDarkMode
                           ? "border-yellow-600/50 bg-gradient-to-r from-gray-800 to-yellow-900/20 text-white focus:ring-yellow-400 focus:border-yellow-400"
                           : "border-gray-300 bg-white text-gray-900 focus:ring-[#FF7F11] focus:border-[#FF7F11]"
@@ -254,7 +254,7 @@ export default function Register() {
                     <button
                       type="button"
                       onClick={() => setShowPassword((prev) => !prev)}
-                      className={`absolute right-4 top-1/2 transform -translate-y-1/2 text-sm font-medium hover:scale-110 transition-transform ${
+                      className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-sm font-medium hover:scale-110 transition-transform ${
                         isDarkMode
                           ? "text-yellow-400 hover:text-yellow-300"
                           : "text-[#FF7F11] hover:text-[#FF1B1C]"
@@ -267,7 +267,7 @@ export default function Register() {
 
                 <div>
                   <label
-                    className={`block text-sm font-semibold mb-3 ${
+                    className={`block text-sm font-semibold mb-2 ${
                       isDarkMode ? "text-gray-200" : "text-gray-700"
                     }`}
                   >
@@ -278,7 +278,7 @@ export default function Register() {
                       type={showConfirmPassword ? "text" : "password"}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className={`w-full p-4 border-2 rounded-xl focus:ring-4 focus:ring-opacity-30 transition-all duration-300 pr-12 ${
+                      className={`w-full p-3 border-2 rounded-lg focus:ring-2 focus:ring-opacity-30 transition-all duration-300 pr-12 ${
                         isDarkMode
                           ? "border-yellow-600/50 bg-gradient-to-r from-gray-800 to-yellow-900/20 text-white focus:ring-yellow-400 focus:border-yellow-400"
                           : "border-gray-300 bg-white text-gray-900 focus:ring-[#FF7F11] focus:border-[#FF7F11]"
@@ -290,7 +290,7 @@ export default function Register() {
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword((prev) => !prev)}
-                      className={`absolute right-4 top-1/2 transform -translate-y-1/2 text-sm font-medium hover:scale-110 transition-transform ${
+                      className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-sm font-medium hover:scale-110 transition-transform ${
                         isDarkMode
                           ? "text-yellow-400 hover:text-yellow-300"
                           : "text-[#FF7F11] hover:text-[#FF1B1C]"
@@ -304,7 +304,7 @@ export default function Register() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`w-full py-4 font-bold text-lg rounded-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg ${
+                  className={`w-full py-3 font-bold text-base rounded-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg ${
                     isDarkMode
                       ? "bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black shadow-yellow-400/25"
                       : "bg-gradient-to-r from-[#FF7F11] to-[#FF1B1C] hover:from-[#FF1B1C] hover:to-[#FF7F11] text-white shadow-[#FF7F11]/25"
@@ -313,7 +313,7 @@ export default function Register() {
                   {loading ? "Creating Account..." : "Create Account"}
                 </button>
 
-                <div className="relative">
+                <div className="relative my-4">
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
                   </div>
@@ -334,7 +334,7 @@ export default function Register() {
                   type="button"
                   onClick={handleGoogleSignIn}
                   disabled={loading}
-                  className={`w-full border-2 py-4 font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3 transform hover:scale-[1.02] active:scale-[0.98] ${
+                  className={`w-full border-2 py-3 font-semibold rounded-lg transition-all duration-300 flex items-center justify-center gap-3 transform hover:scale-[1.02] active:scale-[0.98] ${
                     isDarkMode
                       ? "bg-gradient-to-r from-gray-800 to-yellow-900/20 text-white border-yellow-400 hover:bg-gradient-to-r hover:from-yellow-400 hover:to-yellow-500 hover:text-black"
                       : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-[#FF7F11]"
@@ -362,7 +362,7 @@ export default function Register() {
                 </button>
 
                 <p
-                  className={`text-center text-sm mt-8 ${
+                  className={`text-center text-sm mt-4 ${
                     isDarkMode ? "text-gray-400" : "text-gray-600"
                   }`}
                 >
