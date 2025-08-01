@@ -1,22 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, Sun, Moon, UserCircle } from "lucide-react";
 import { auth, db } from "../firebaseConfig";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import Sidebar from "./Sidebar"; // 👈 Make sure this component exists
+import { useDarkMode } from "../contexts/DarkModeContext";
 
 export default function Navbar({ onTabChange }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isDarkTheme, setIsDarkTheme] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // 👈 Sidebar toggle
+  const { isDarkMode, toggleDarkMode } = useDarkMode();
 
   const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -47,24 +47,14 @@ export default function Navbar({ onTabChange }) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  useEffect(() => {
-    if (location.pathname === "/") {
-      if (isDarkTheme) {
-        document.body.classList.add("dark-theme");
-      } else {
-        document.body.classList.remove("dark-theme");
-      }
-    }
-  }, [isDarkTheme, location.pathname]);
+  // Dark mode is now handled by the context, so we don't need this effect
 
   const handleLogout = async () => {
     await signOut(auth);
     navigate("/login");
   };
 
-  const toggleTheme = () => {
-    setIsDarkTheme(!isDarkTheme);
-  };
+  // toggleTheme is now handled by the context
 
   const navItems = [
     { to: "/Adopt", label: "Adopt" },
@@ -81,7 +71,7 @@ export default function Navbar({ onTabChange }) {
           exit={{ y: -80, opacity: 0 }}
           transition={{ duration: 0.3 }}
           className={`fixed z-50 w-full px-4 sm:px-8 pt-4.5 pb-4.5 transition-all duration-500 ${
-            location.pathname === "/" && isDarkTheme
+            isDarkMode
               ? scrolled
                 ? "bg-black/80 backdrop-blur-xl border-b border-yellow-400/30 shadow-2xl shadow-yellow-400/10"
                 : "bg-black/40 backdrop-blur-md border-b border-yellow-400/20"
@@ -95,7 +85,7 @@ export default function Navbar({ onTabChange }) {
               <Link
                 to="/"
                 className={`font-extrabold text-xl sm:text-2xl transition-all duration-300 ${
-                  location.pathname === "/" && isDarkTheme
+                  isDarkMode
                     ? "text-yellow-400 drop-shadow-lg"
                     : "text-[#FF7F11] drop-shadow-lg"
                 }`}
@@ -105,20 +95,18 @@ export default function Navbar({ onTabChange }) {
               </Link>
             </motion.div>
 
-            {location.pathname === "/" && (
-              <motion.button
-                whileHover={{ scale: 1.1, rotate: 180 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={toggleTheme}
-                className={`p-2 rounded-full transition-all duration-300 backdrop-blur-sm ${
-                  location.pathname === "/" && isDarkTheme
-                    ? "bg-yellow-400/20 text-yellow-400 hover:bg-yellow-400/30 border border-yellow-400/30"
-                    : "bg-[#FF7F11]/20 text-[#FF7F11] hover:bg-[#FF7F11]/30 border border-[#FF7F11]/30"
-                }`}
-              >
-                {isDarkTheme ? <Sun size={16} /> : <Moon size={16} />}
-              </motion.button>
-            )}
+            <motion.button
+              whileHover={{ scale: 1.1, rotate: 180 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={toggleDarkMode}
+              className={`p-2 rounded-full transition-all duration-300 backdrop-blur-sm ${
+                isDarkMode
+                  ? "bg-yellow-400/20 text-yellow-400 hover:bg-yellow-400/30 border border-yellow-400/30"
+                  : "bg-[#FF7F11]/20 text-[#FF7F11] hover:bg-[#FF7F11]/30 border border-[#FF7F11]/30"
+              }`}
+            >
+              {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
+            </motion.button>
 
             <motion.button
               whileHover={{ scale: 1.1 }}
@@ -130,20 +118,12 @@ export default function Navbar({ onTabChange }) {
               {menuOpen ? (
                 <X
                   size={20}
-                  className={
-                    location.pathname === "/" && isDarkTheme
-                      ? "text-yellow-400"
-                      : "text-[#FF7F11]"
-                  }
+                  className={isDarkMode ? "text-yellow-400" : "text-[#FF7F11]"}
                 />
               ) : (
                 <Menu
                   size={20}
-                  className={
-                    location.pathname === "/" && isDarkTheme
-                      ? "text-yellow-400"
-                      : "text-[#FF7F11]"
-                  }
+                  className={isDarkMode ? "text-yellow-400" : "text-[#FF7F11]"}
                 />
               )}
             </motion.button>
@@ -158,7 +138,7 @@ export default function Navbar({ onTabChange }) {
                   <Link
                     to={item.to}
                     className={`font-semibold text-base transition-all duration-300 relative group px-2.5 py-1.5 rounded-lg backdrop-blur-sm ${
-                      location.pathname === "/" && isDarkTheme
+                      isDarkMode
                         ? "text-white hover:text-yellow-400 hover:bg-yellow-400/10"
                         : "text-[#7a7568] hover:text-[#FF7F11] hover:bg-[#FF7F11]/10"
                     }`}
@@ -166,9 +146,7 @@ export default function Navbar({ onTabChange }) {
                     {item.label}
                     <span
                       className={`absolute -bottom-0.5 left-1/2 w-0 h-0.5 transition-all duration-300 group-hover:w-full group-hover:left-0 ${
-                        location.pathname === "/" && isDarkTheme
-                          ? "bg-yellow-400"
-                          : "bg-[#FF7F11]"
+                        isDarkMode ? "bg-yellow-400" : "bg-[#FF7F11]"
                       }`}
                     />
                   </Link>
@@ -181,7 +159,7 @@ export default function Navbar({ onTabChange }) {
                   <Link
                     to="/admin-dashboard"
                     className={`font-semibold text-base transition-all duration-300 relative group px-2.5 py-1.5 rounded-lg backdrop-blur-sm ${
-                      location.pathname === "/" && isDarkTheme
+                      isDarkMode
                         ? "text-white hover:text-yellow-400 hover:bg-yellow-400/10"
                         : "text-[#7a7568] hover:text-[#FF7F11] hover:bg-[#FF7F11]/10"
                     }`}
@@ -189,9 +167,7 @@ export default function Navbar({ onTabChange }) {
                     Dashboard
                     <span
                       className={`absolute -bottom-0.5 left-1/2 w-0 h-0.5 transition-all duration-300 group-hover:w-full group-hover:left-0 ${
-                        location.pathname === "/" && isDarkTheme
-                          ? "bg-yellow-400"
-                          : "bg-[#FF7F11]"
+                        isDarkMode ? "bg-yellow-400" : "bg-[#FF7F11]"
                       }`}
                     />
                   </Link>
@@ -207,8 +183,8 @@ export default function Navbar({ onTabChange }) {
                 >
                   <button
                     onClick={() => setIsSidebarOpen(true)}
-                    className={`flex items-center justify-center ml-1 transition-all duration-300 cursor-pointer ${
-                      location.pathname === "/" && isDarkTheme
+                    className={`flex items-center justify-center ml-1 transition-all duration-300 ${
+                      isDarkMode
                         ? "text-yellow-400 hover:text-yellow-300"
                         : "text-[#FF7F11] hover:text-[#FF4F11]"
                     }`}
@@ -226,7 +202,7 @@ export default function Navbar({ onTabChange }) {
                   whileTap={{ scale: 0.95 }}
                   onClick={handleLogout}
                   className={`ml-4 px-4 py-2 font-semibold rounded-full transition-all duration-300 backdrop-blur-sm border text-sm ${
-                    location.pathname === "/" && isDarkTheme
+                    isDarkMode
                       ? "bg-yellow-400/90 text-black hover:bg-yellow-400 shadow-lg shadow-yellow-400/25 border-yellow-400/30"
                       : "bg-[#FF1B1C]/90 text-white hover:bg-[#FF1B1C] shadow-lg shadow-[#FF1B1C]/25 border-[#FF1B1C]/30"
                   }`}
@@ -241,7 +217,7 @@ export default function Navbar({ onTabChange }) {
                   <Link
                     to="/Login"
                     className={`ml-4 px-4 py-2 font-semibold rounded-full transition-all duration-300 backdrop-blur-sm border text-sm ${
-                      location.pathname === "/" && isDarkTheme
+                      isDarkMode
                         ? "bg-yellow-400/90 text-black hover:bg-yellow-400 shadow-lg shadow-yellow-400/25 border-yellow-400/30"
                         : "bg-[#FF7F11]/90 text-white hover:bg-[#FF7F11] shadow-lg shadow-[#FF7F11]/25 border-[#FF7F11]/30"
                     }`}

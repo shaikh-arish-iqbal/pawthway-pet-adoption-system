@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useDarkMode } from "../contexts/DarkModeContext";
 
 const PetFilter = ({ pets, onFilterChange }) => {
   // State for each filter
@@ -6,6 +7,7 @@ const PetFilter = ({ pets, onFilterChange }) => {
   const [type, setType] = useState("");
   const [breed, setBreed] = useState("");
   const [breedOptions, setBreedOptions] = useState([]);
+  const { isDarkMode } = useDarkMode();
 
   // 🧠 Effect to watch for filter changes (city, type, breed) and inform the parent component
   // This ensures that whenever a filter value changes, the parent (e.g., Adopt page)
@@ -27,16 +29,30 @@ const PetFilter = ({ pets, onFilterChange }) => {
   }, [type, pets]); // Depend on 'type' and 'pets' data
 
   // Derive unique city and type options from the full 'pets' list
-  const uniqueCities = [...new Set(pets.map((pet) => pet.location).filter(Boolean))].sort();
-  const uniqueTypes = [...new Set(pets.map((pet) => pet.type).filter(Boolean))].sort();
+  const uniqueCities = [
+    ...new Set(pets.map((pet) => pet.location).filter(Boolean)),
+  ].sort();
+  const uniqueTypes = [
+    ...new Set(pets.map((pet) => pet.type).filter(Boolean)),
+  ].sort();
 
   return (
-    <div className="flex flex-wrap gap-4 justify-center items-center bg-[#FFFFFC] px-4 py-4 mb-6 rounded-xl shadow border border-[#BEB7A4] max-w-4xl mx-auto">
+    <div
+      className={`flex flex-wrap gap-4 justify-center items-center px-4 py-4 mb-6 rounded-xl shadow border max-w-4xl mx-auto ${
+        isDarkMode
+          ? "bg-black/50 border-gray-600"
+          : "bg-[#FFFFFC] border-[#BEB7A4]"
+      }`}
+    >
       {/* City Filter */}
       <select
         value={city}
         onChange={(e) => setCity(e.target.value)}
-        className="px-4 py-2 text-[#000000] bg-white border border-[#BEB7A4] rounded-md shadow-sm focus:ring-2 focus:ring-[#FF7F11] focus:outline-none"
+        className={`px-4 py-2 rounded-md shadow-sm focus:ring-2 focus:outline-none ${
+          isDarkMode
+            ? "text-white bg-gray-800 border-gray-600 focus:ring-yellow-400"
+            : "text-[#000000] bg-white border-[#BEB7A4] focus:ring-[#FF7F11]"
+        }`}
       >
         <option value="">All Cities</option>
         {uniqueCities.map((loc) => (
@@ -54,7 +70,11 @@ const PetFilter = ({ pets, onFilterChange }) => {
           setType(e.target.value);
           setBreed(""); // Reset breed filter when type changes to avoid invalid combinations
         }}
-        className="px-4 py-2 text-[#000000] bg-white border border-[#BEB7A4] rounded-md shadow-sm focus:ring-2 focus:ring-[#FF7F11] focus:outline-none"
+        className={`px-4 py-2 rounded-md shadow-sm focus:ring-2 focus:outline-none ${
+          isDarkMode
+            ? "text-white bg-gray-800 border-gray-600 focus:ring-yellow-400"
+            : "text-[#000000] bg-white border-[#BEB7A4] focus:ring-[#FF7F11]"
+        }`}
       >
         <option value="">All Types</option>
         {uniqueTypes.map((t) => (
@@ -69,7 +89,11 @@ const PetFilter = ({ pets, onFilterChange }) => {
       <select
         value={breed}
         onChange={(e) => setBreed(e.target.value)}
-        className="px-4 py-2 text-[#000000] bg-white border border-[#BEB7A4] rounded-md shadow-sm focus:ring-2 focus:ring-[#FF7F11] focus:outline-none"
+        className={`px-4 py-2 rounded-md shadow-sm focus:ring-2 focus:outline-none ${
+          isDarkMode
+            ? "text-white bg-gray-800 border-gray-600 focus:ring-yellow-400"
+            : "text-[#000000] bg-white border-[#BEB7A4] focus:ring-[#FF7F11]"
+        }`}
       >
         <option value="">All Breeds</option>
         {/* 'breedOptions' is already unique and sorted from its useEffect */}

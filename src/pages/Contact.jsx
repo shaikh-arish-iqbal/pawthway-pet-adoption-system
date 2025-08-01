@@ -136,7 +136,7 @@ export default function Contact() {
           </div>
         </motion.form>
 
-        <div className="mt-10 mb-10 text-[#000000]">
+        <div className="mt-10 mb-10 text-[#BEB7A4]">
           <p className="mb-2">Are you a shelter or NGO?</p>
           <Link
             to="/register-shelter"

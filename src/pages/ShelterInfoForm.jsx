@@ -111,7 +111,7 @@ export default function ShelterInfoForm() {
             {/* Ensures it takes 1 column on medium screens */}
             <label
               htmlFor="shelterName"
-              className="block text-lg font-semibold text-gray-800 mb-2"
+              className="block text-lg font-semibold text-[#BEB7A4] mb-2"
             >
               Shelter Name <span className="text-[#FF1B1C]">*</span>
             </label>
@@ -130,7 +130,7 @@ export default function ShelterInfoForm() {
           <div className="md:col-span-1">
             <label
               htmlFor="location"
-              className="block text-lg font-semibold text-gray-800 mb-2"
+              className="block text-lg font-semibold text-[#BEB7A4] mb-2"
             >
               Location (City, State/Province, Country){" "}
               <span className="text-[#FF1B1C]">*</span>
@@ -150,7 +150,7 @@ export default function ShelterInfoForm() {
           <div className="md:col-span-1">
             <label
               htmlFor="contactEmail"
-              className="block text-lg font-semibold text-gray-800 mb-2"
+              className="block text-lg font-semibold text-[#BEB7A4] mb-2"
             >
               Contact Email <span className="text-[#FF1B1C]">*</span>
             </label>
@@ -169,7 +169,7 @@ export default function ShelterInfoForm() {
           <div className="md:col-span-1">
             <label
               htmlFor="contactPhone"
-              className="block text-lg font-semibold text-gray-800 mb-2"
+              className="block text-lg font-semibold text-[#BEB7A4] mb-2"
             >
               Contact Phone Number
             </label>
@@ -189,7 +189,7 @@ export default function ShelterInfoForm() {
             {/* This field spans both columns */}
             <label
               htmlFor="website"
-              className="block text-lg font-semibold text-gray-800 mb-2"
+              className="block text-lg font-semibold text-[#BEB7A4] mb-2"
             >
               Website URL
             </label>
@@ -209,7 +209,7 @@ export default function ShelterInfoForm() {
             {/* This field spans both columns */}
             <label
               htmlFor="description"
-              className="block text-lg font-semibold text-gray-800 mb-2"
+              className="block text-lg font-semibold text-[#BEB7A4] mb-2"
             >
               Shelter Description <span className="text-[#FF1B1C]">*</span>
             </label>

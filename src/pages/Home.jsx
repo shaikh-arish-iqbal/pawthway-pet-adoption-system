@@ -290,43 +290,6 @@ export default function Home() {
         </motion.div>
       </motion.section>
 
-      {/* Stats Section */}
-      <motion.section
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
-        viewport={{ once: true }}
-        className="py-16 bg-white/50 backdrop-blur-sm"
-      >
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="text-center"
-              >
-                <motion.div
-                  initial={{ scale: 0 }}
-                  whileInView={{ scale: 1 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 + 0.3 }}
-                  viewport={{ once: true }}
-                  className="text-4xl md:text-5xl font-black text-[#FF1B1C] mb-2"
-                >
-                  {stat.number}
-                </motion.div>
-                <div className="text-[#BEB7A4] font-semibold text-lg">
-                  {stat.label}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </motion.section>
-
       {/* Quick Links Section */}
       <motion.section
         initial={{ opacity: 0 }}

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { db } from "../firebaseConfig";
 import { collection, getDocs } from "firebase/firestore";
 import MyFooter from "../components/Footer";
 import PetCard from "../components/PetCard";
 import PetFilter from "../components/PetFilter";
 import { useLocation } from "react-router-dom";
+import { useDarkMode } from "../contexts/DarkModeContext";
 
 export default function Adopt() {
   const [pets, setPets] = useState([]);
@@ -13,6 +14,7 @@ export default function Adopt() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const location = useLocation();
+  const { isDarkMode } = useDarkMode();
 
   // Set initial searchQuery from URL param
   useEffect(() => {
@@ -56,7 +58,13 @@ export default function Adopt() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#FFFFFC] via-[#f8f7f4] to-[#BEB7A4]">
+    <div
+      className={`min-h-screen ${
+        isDarkMode
+          ? "bg-gradient-to-br from-[#000000] via-[#1a1a1a] to-[#2d2d2d] text-white"
+          : "bg-gradient-to-br from-[#FFFFFC] via-[#f8f7f4] to-[#BEB7A4]"
+      }`}
+    >
       {/* Hero Section */}
       <motion.section
         initial={{ opacity: 0, y: 50 }}
@@ -76,7 +84,9 @@ export default function Adopt() {
               repeat: Infinity,
               ease: "linear",
             }}
-            className="absolute top-20 left-20 w-32 h-32 bg-[#FF7F11] opacity-10 rounded-full"
+            className={`absolute top-20 left-20 w-32 h-32 opacity-10 rounded-full ${
+              isDarkMode ? "bg-yellow-400" : "bg-[#FF7F11]"
+            }`}
           />
           <motion.div
             animate={{
@@ -88,7 +98,9 @@ export default function Adopt() {
               repeat: Infinity,
               ease: "linear",
             }}
-            className="absolute bottom-20 right-20 w-24 h-24 bg-[#FF1B1C] opacity-10 rounded-full"
+            className={`absolute bottom-20 right-20 w-24 h-24 opacity-10 rounded-full ${
+              isDarkMode ? "bg-yellow-400" : "bg-[#FF1B1C]"
+            }`}
           />
         </div>
 
@@ -97,7 +109,9 @@ export default function Adopt() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-4xl md:text-6xl font-black text-[#FF1B1C] mb-6"
+            className={`text-4xl md:text-6xl font-black mb-6 ${
+              isDarkMode ? "text-yellow-400" : "text-[#FF1B1C]"
+            }`}
           >
             Find Your Perfect
             <br />
@@ -108,7 +122,9 @@ export default function Adopt() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-xl text-[#7a7568] mb-8 max-w-2xl mx-auto"
+            className={`text-xl mb-8 max-w-2xl mx-auto ${
+              isDarkMode ? "text-gray-300" : "text-[#7a7568]"
+            }`}
           >
             Browse through our wonderful pets looking for their forever homes.
             Every adoption saves two lives - the one you adopt and the one you
@@ -128,11 +144,17 @@ export default function Adopt() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by name, breed, or type..."
-                className="w-full px-6 py-4 text-lg rounded-full border-2 border-[#FF7F11] bg-white/90 backdrop-blur-sm text-black focus:outline-none focus:ring-4 focus:ring-[#FF7F11]/30 focus:border-[#FF7F11] shadow-lg"
+                className={`w-full px-6 py-4 text-lg rounded-full border-2 backdrop-blur-sm focus:outline-none focus:ring-4 shadow-lg ${
+                  isDarkMode
+                    ? "border-yellow-400 bg-black/90 text-white focus:ring-yellow-400/30 focus:border-yellow-400"
+                    : "border-[#FF7F11] bg-white/90 text-black focus:ring-[#FF7F11]/30 focus:border-[#FF7F11]"
+                }`}
               />
               <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
                 <svg
-                  className="w-6 h-6 text-[#FF7F11]"
+                  className={`w-6 h-6 ${
+                    isDarkMode ? "text-yellow-400" : "text-[#FF7F11]"
+                  }`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -156,16 +178,28 @@ export default function Adopt() {
             className="flex justify-center space-x-8 text-center"
           >
             <div>
-              <div className="text-2xl font-bold text-[#FF1B1C]">
+              <div
+                className={`text-2xl font-bold ${
+                  isDarkMode ? "text-yellow-400" : "text-[#FF1B1C]"
+                }`}
+              >
                 {pets.length}
               </div>
-              <div className="text-[#7a7568]">Total Pets</div>
+              <div className={isDarkMode ? "text-gray-300" : "text-[#7a7568]"}>
+                Total Pets
+              </div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-[#FF1B1C]">
+              <div
+                className={`text-2xl font-bold ${
+                  isDarkMode ? "text-yellow-400" : "text-[#FF1B1C]"
+                }`}
+              >
                 {filteredPets.length}
               </div>
-              <div className="text-[#7a7568]">Available</div>
+              <div className={isDarkMode ? "text-gray-300" : "text-[#7a7568]"}>
+                Available
+              </div>
             </div>
           </motion.div>
         </div>
@@ -176,7 +210,9 @@ export default function Adopt() {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.3 }}
-        className="py-8 bg-white/50 backdrop-blur-sm"
+        className={`py-8 backdrop-blur-sm ${
+          isDarkMode ? "bg-black/50" : "bg-white/50"
+        }`}
       >
         <div className="max-w-6xl mx-auto px-6">
           <PetFilter pets={pets} onFilterChange={setFilters} />
@@ -196,9 +232,15 @@ export default function Adopt() {
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  className="w-16 h-16 border-4 border-[#FF7F11] border-t-transparent rounded-full mx-auto mb-4"
+                  className={`w-16 h-16 border-4 border-t-transparent rounded-full mx-auto mb-4 ${
+                    isDarkMode ? "border-yellow-400" : "border-[#FF7F11]"
+                  }`}
                 />
-                <p className="text-[#7a7568] text-lg">
+                <p
+                  className={`${
+                    isDarkMode ? "text-gray-300" : "text-[#7a7568]"
+                  } text-lg`}
+                >
                   Loading adorable pets...
                 </p>
               </div>
@@ -210,10 +252,18 @@ export default function Adopt() {
               className="text-center py-20"
             >
               <div className="text-6xl mb-6">🐾</div>
-              <h3 className="text-2xl font-bold text-[#FF1B1C] mb-4">
+              <h3
+                className={`text-2xl font-bold mb-4 ${
+                  isDarkMode ? "text-yellow-400" : "text-[#FF1B1C]"
+                }`}
+              >
                 No pets found
               </h3>
-              <p className="text-[#7a7568] mb-6">
+              <p
+                className={`mb-6 ${
+                  isDarkMode ? "text-gray-300" : "text-[#7a7568]"
+                }`}
+              >
                 Try adjusting your search criteria or filters
               </p>
               <motion.button
@@ -223,7 +273,11 @@ export default function Adopt() {
                   setSearchQuery("");
                   setFilters({});
                 }}
-                className="bg-[#FF7F11] text-white px-6 py-3 rounded-full font-semibold hover:bg-[#e56e0e] transition-colors"
+                className={`px-6 py-3 rounded-full font-semibold transition-colors ${
+                  isDarkMode
+                    ? "bg-yellow-400 text-black hover:bg-yellow-300"
+                    : "bg-[#FF7F11] text-white hover:bg-[#e56e0e]"
+                }`}
               >
                 Clear Filters
               </motion.button>
@@ -246,7 +300,11 @@ export default function Adopt() {
         whileInView={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
         viewport={{ once: true }}
-        className="py-20 bg-gradient-to-r from-[#FF1B1C] to-[#FF7F11] relative overflow-hidden"
+        className={`py-20 relative overflow-hidden ${
+          isDarkMode
+            ? "bg-gradient-to-r from-yellow-600 to-yellow-400"
+            : "bg-gradient-to-r from-[#FF1B1C] to-[#FF7F11]"
+        }`}
       >
         <div className="absolute inset-0">
           <motion.div
@@ -278,7 +336,11 @@ export default function Adopt() {
           >
             <a
               href="/Contact"
-              className="inline-block bg-white text-[#FF1B1C] px-8 py-4 rounded-full font-bold text-lg hover:shadow-xl transition-all duration-300"
+              className={`inline-block px-8 py-4 rounded-full font-bold text-lg hover:shadow-xl transition-all duration-300 ${
+                isDarkMode
+                  ? "bg-black text-yellow-400 hover:bg-gray-900"
+                  : "bg-white text-[#FF1B1C]"
+              }`}
             >
               Contact Us
             </a>

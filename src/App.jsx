@@ -17,10 +17,11 @@ import UserDashboard from "./pages/UserDashboard";
 import Favourites from "./pages/Favourites";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { DarkModeProvider } from "./contexts/DarkModeContext";
 
 function App() {
   return (
-    <>
+    <DarkModeProvider>
       <ToastContainer position="bottom-right" />
       <BrowserRouter>
         <Navbar />
@@ -41,7 +42,7 @@ function App() {
           <Route path="/favourites" element={<Favourites />} />
         </Routes>
       </BrowserRouter>
-    </>
+    </DarkModeProvider>
   );
 }
 

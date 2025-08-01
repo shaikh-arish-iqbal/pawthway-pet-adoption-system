@@ -5,9 +5,10 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
 } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useNavigate, Link } from "react-router-dom";
 import MyFooter from "../components/Footer";
+import { useDarkMode } from "../contexts/DarkModeContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -16,6 +17,7 @@ export default function Login() {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const { isDarkMode } = useDarkMode();
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
@@ -97,37 +99,95 @@ export default function Login() {
 
   return (
     <div>
-      <div className="min-h-screen bg-[#FFFFFC] flex items-center justify-center px-4">
-        <div className="flex flex-col md:flex-row w-full max-w-5xl bg-white shadow-xl rounded-xl overflow-hidden">
+      <div
+        className={`min-h-screen flex items-center justify-center px-6 py-8 ${
+          isDarkMode
+            ? "bg-gradient-to-br from-[#000000] via-[#1a1a1a] to-[#2d2d2d]"
+            : "bg-gradient-to-br from-[#FFFFFC] via-[#f8f7f4] to-[#BEB7A4]"
+        }`}
+      >
+        <div
+          className={`flex flex-col lg:flex-row w-full max-w-7xl shadow-2xl rounded-3xl overflow-hidden backdrop-blur-sm ${
+            isDarkMode
+              ? "bg-gradient-to-br from-gray-900/95 via-gray-800/95 to-yellow-900/30 border border-yellow-500/20"
+              : "bg-white/95 border border-gray-200/50"
+          }`}
+        >
           <div
-            className="hidden md:block md:w-1/2 bg-cover bg-center"
+            className="hidden lg:block lg:w-1/2 bg-cover bg-center relative"
             style={{
               backgroundImage: `url("https://images.unsplash.com/photo-1558788353-f76d92427f16")`,
             }}
-          />
+          >
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            <div className="absolute bottom-8 left-8 right-8 text-white">
+              <h3 className="text-2xl font-bold mb-2">
+                Find Your Perfect Companion
+              </h3>
+              <p className="text-white/80">
+                Join thousands of happy pet adoptions
+              </p>
+            </div>
+          </div>
 
-          <div className="w-full md:w-1/2 bg-[#FFFFFC] text-[#000000] flex items-center justify-center overflow-y-auto">
-            <div className="w-full p-6 sm:p-10 flex flex-col justify-center min-h-full">
-              <h2 className="text-3xl font-bold mb-6 text-center text-[#FF7F11]">
-                Welcome Back 🐾
-              </h2>
+          <div
+            className={`w-full lg:w-1/2 flex items-center justify-center overflow-y-auto ${
+              isDarkMode
+                ? "bg-gradient-to-br from-gray-900/95 via-gray-800/95 to-yellow-900/20 text-white"
+                : "bg-white/95 text-[#000000]"
+            }`}
+          >
+            <div className="w-full p-8 sm:p-12 lg:p-16 flex flex-col justify-center min-h-full">
+              <div className="text-center mb-8">
+                <h2
+                  className={`text-4xl lg:text-5xl font-black mb-4 ${
+                    isDarkMode ? "text-yellow-400" : "text-[#FF7F11]"
+                  }`}
+                >
+                  Welcome Back
+                </h2>
+                <p
+                  className={`text-lg ${
+                    isDarkMode ? "text-gray-300" : "text-gray-600"
+                  }`}
+                >
+                  Sign in to continue your pet adoption journey 🐾
+                </p>
+              </div>
 
               {error && (
-                <div className="bg-[#FF1B1C] text-[#FFFFFC] text-sm p-3 rounded mb-4 text-center">
+                <div
+                  className={`text-sm p-4 rounded-xl mb-6 text-center border ${
+                    isDarkMode
+                      ? "bg-red-600/90 text-white border-red-500/30"
+                      : "bg-red-50 text-red-700 border-red-200"
+                  }`}
+                >
                   {error}
                 </div>
               )}
 
-              <form onSubmit={handleLogin} className="space-y-6 w-full">
+              <form
+                onSubmit={handleLogin}
+                className="space-y-8 w-full max-w-md mx-auto"
+              >
                 <div>
-                  <label className="block text-sm font-medium mb-1">
+                  <label
+                    className={`block text-sm font-semibold mb-3 ${
+                      isDarkMode ? "text-gray-200" : "text-gray-700"
+                    }`}
+                  >
                     Email Address
                   </label>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full p-3 border border-[#BEB7A4] rounded bg-[#FFFFFC] text-[#000000] focus:ring-[#FF7F11]"
+                    className={`w-full p-4 border-2 rounded-xl focus:ring-4 focus:ring-opacity-30 transition-all duration-300 ${
+                      isDarkMode
+                        ? "border-yellow-600/50 bg-gradient-to-r from-gray-800 to-yellow-900/20 text-white focus:ring-yellow-400 focus:border-yellow-400"
+                        : "border-gray-300 bg-white text-gray-900 focus:ring-[#FF7F11] focus:border-[#FF7F11]"
+                    }`}
                     placeholder="you@example.com"
                     disabled={loading}
                     required
@@ -135,7 +195,11 @@ export default function Login() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">
+                  <label
+                    className={`block text-sm font-semibold mb-3 ${
+                      isDarkMode ? "text-gray-200" : "text-gray-700"
+                    }`}
+                  >
                     Password
                   </label>
                   <div className="relative">
@@ -143,7 +207,11 @@ export default function Login() {
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full p-3 border border-[#BEB7A4] rounded bg-[#FFFFFC] text-[#000000] focus:ring-[#FF7F11] pr-12"
+                      className={`w-full p-4 border-2 rounded-xl focus:ring-4 focus:ring-opacity-30 transition-all duration-300 pr-12 ${
+                        isDarkMode
+                          ? "border-yellow-600/50 bg-gradient-to-r from-gray-800 to-yellow-900/20 text-white focus:ring-yellow-400 focus:border-yellow-400"
+                          : "border-gray-300 bg-white text-gray-900 focus:ring-[#FF7F11] focus:border-[#FF7F11]"
+                      }`}
                       placeholder="Your secure password"
                       disabled={loading}
                       required
@@ -151,7 +219,11 @@ export default function Login() {
                     <button
                       type="button"
                       onClick={() => setShowPassword((prev) => !prev)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-[#FF7F11] hover:text-[#FF1B1C]"
+                      className={`absolute right-4 top-1/2 transform -translate-y-1/2 text-sm font-medium hover:scale-110 transition-transform ${
+                        isDarkMode
+                          ? "text-yellow-400 hover:text-yellow-300"
+                          : "text-[#FF7F11] hover:text-[#FF1B1C]"
+                      }`}
                     >
                       {showPassword ? "Hide" : "Show"}
                     </button>
@@ -161,16 +233,41 @@ export default function Login() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-[#FF7F11] hover:bg-[#FF1B1C] text-white py-3 font-semibold rounded transition duration-300"
+                  className={`w-full py-4 font-bold text-lg rounded-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg ${
+                    isDarkMode
+                      ? "bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black shadow-yellow-400/25"
+                      : "bg-gradient-to-r from-[#FF7F11] to-[#FF1B1C] hover:from-[#FF1B1C] hover:to-[#FF7F11] text-white shadow-[#FF7F11]/25"
+                  }`}
                 >
                   {loading ? "Signing In..." : "Sign In"}
                 </button>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span
+                      className={`px-2 ${
+                        isDarkMode
+                          ? "bg-gray-900/95 text-gray-400"
+                          : "bg-white/95 text-gray-500"
+                      }`}
+                    >
+                      or continue with
+                    </span>
+                  </div>
+                </div>
 
                 <button
                   type="button"
                   onClick={handleGoogleSignIn}
                   disabled={loading}
-                  className="w-full bg-white text-[#000000] border border-[#FF7F11] hover:bg-[#FF7F11] hover:text-white py-3 font-semibold rounded transition duration-300 flex items-center justify-center gap-3"
+                  className={`w-full border-2 py-4 font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-3 transform hover:scale-[1.02] active:scale-[0.98] ${
+                    isDarkMode
+                      ? "bg-gradient-to-r from-gray-800 to-yellow-900/20 text-white border-yellow-400 hover:bg-gradient-to-r hover:from-yellow-400 hover:to-yellow-500 hover:text-black"
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-[#FF7F11]"
+                  }`}
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path
@@ -193,11 +290,19 @@ export default function Login() {
                   Continue with Google
                 </button>
 
-                <p className="text-center text-sm text-[#000000]">
+                <p
+                  className={`text-center text-sm mt-8 ${
+                    isDarkMode ? "text-gray-400" : "text-gray-600"
+                  }`}
+                >
                   Don't have an account?{" "}
                   <Link
                     to="/register"
-                    className="text-[#FF1B1C] font-semibold hover:underline"
+                    className={`font-semibold hover:underline transition-colors ${
+                      isDarkMode
+                        ? "text-yellow-400 hover:text-yellow-300"
+                        : "text-[#FF1B1C] hover:text-[#FF7F11]"
+                    }`}
                   >
                     Create one here
                   </Link>

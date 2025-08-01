@@ -4,12 +4,14 @@ import { db, storage } from "../firebaseConfig";
 import { collection, getDocs } from "firebase/firestore";
 import { getDownloadURL, ref } from "firebase/storage";
 import { useNavigate } from "react-router-dom";
+import { useDarkMode } from "../contexts/DarkModeContext";
 
 const PetCard = ({ pets: propPets, cityFilter }) => {
   const [pets, setPets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hoveredPet, setHoveredPet] = useState(null);
   const navigate = useNavigate();
+  const { isDarkMode } = useDarkMode();
 
   useEffect(() => {
     const fetchPets = async () => {
@@ -97,7 +99,9 @@ const PetCard = ({ pets: propPets, cityFilter }) => {
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-16 h-16 border-4 border-[#FF7F11] border-t-transparent rounded-full"
+          className={`w-16 h-16 border-4 border-t-transparent rounded-full ${
+            isDarkMode ? "border-yellow-400" : "border-[#FF7F11]"
+          }`}
         />
       </div>
     );
@@ -128,9 +132,19 @@ const PetCard = ({ pets: propPets, cityFilter }) => {
             className="group cursor-pointer"
             onClick={() => handleAdoptClick(pet.id)}
           >
-            <div className="bg-white rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 group-hover:shadow-2xl border border-gray-100 flex flex-col h-full">
+            <div
+              className={`rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 group-hover:shadow-2xl border flex flex-col h-full ${
+                isDarkMode
+                  ? "bg-gray-800 border-gray-700"
+                  : "bg-white border-gray-100"
+              }`}
+            >
               {/* Image Container */}
-              <div className="relative overflow-hidden aspect-[4/3] min-h-[200px] max-h-[220px] flex items-center justify-center bg-gray-100">
+              <div
+                className={`relative overflow-hidden aspect-[4/3] min-h-[200px] max-h-[220px] flex items-center justify-center ${
+                  isDarkMode ? "bg-gray-700" : "bg-gray-100"
+                }`}
+              >
                 <motion.img
                   whileHover={{ scale: 1.1 }}
                   transition={{ duration: 0.3 }}
@@ -148,13 +162,23 @@ const PetCard = ({ pets: propPets, cityFilter }) => {
                   className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"
                 />
                 {/* Pet type badge */}
-                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 text-sm font-semibold text-[#FF1B1C] flex items-center gap-1">
+                <div
+                  className={`absolute top-4 left-4 backdrop-blur-sm rounded-full px-3 py-1 text-sm font-semibold flex items-center gap-1 ${
+                    isDarkMode
+                      ? "bg-black/90 text-yellow-400"
+                      : "bg-white/90 text-[#FF1B1C]"
+                  }`}
+                >
                   <span>{getPetTypeIcon(pet.type)}</span>
                   <span>{pet.type || "Pet"}</span>
                 </div>
                 {/* Location badge */}
                 {pet.city && (
-                  <div className="absolute top-4 right-4 bg-[#FF7F11]/90 backdrop-blur-sm text-white rounded-full px-3 py-1 text-sm font-semibold">
+                  <div
+                    className={`absolute top-4 right-4 backdrop-blur-sm text-white rounded-full px-3 py-1 text-sm font-semibold ${
+                      isDarkMode ? "bg-yellow-600/90" : "bg-[#FF7F11]/90"
+                    }`}
+                  >
                     📍 {pet.city}
                   </div>
                 )}
@@ -184,19 +208,39 @@ const PetCard = ({ pets: propPets, cityFilter }) => {
               {/* Content */}
               <div className="p-6 flex flex-col flex-1 justify-between">
                 <div className="mb-2">
-                  <h3 className="text-xl font-bold text-[#FF1B1C] mb-1 group-hover:text-[#FF7F11] transition-colors">
+                  <h3
+                    className={`text-xl font-bold mb-1 transition-colors ${
+                      isDarkMode
+                        ? "text-yellow-400 group-hover:text-yellow-300"
+                        : "text-[#FF1B1C] group-hover:text-[#FF7F11]"
+                    }`}
+                  >
                     {pet.name || "Unnamed Pet"}
                   </h3>
                   {pet.breed && (
-                    <p className="text-[#7a7568] text-sm mb-1">{pet.breed}</p>
+                    <p
+                      className={`text-sm mb-1 ${
+                        isDarkMode ? "text-gray-300" : "text-[#7a7568]"
+                      }`}
+                    >
+                      {pet.breed}
+                    </p>
                   )}
                   {pet.age && (
-                    <p className="text-[#7a7568] text-sm">
+                    <p
+                      className={`text-sm ${
+                        isDarkMode ? "text-gray-300" : "text-[#7a7568]"
+                      }`}
+                    >
                       Age: {getAgeText(pet.age)}
                     </p>
                   )}
                   {pet.gender && (
-                    <p className="text-[#7a7568] text-sm">
+                    <p
+                      className={`text-sm ${
+                        isDarkMode ? "text-gray-300" : "text-[#7a7568]"
+                      }`}
+                    >
                       Gender: {pet.gender}
                     </p>
                   )}
@@ -204,14 +248,22 @@ const PetCard = ({ pets: propPets, cityFilter }) => {
                 {/* Tags/Characteristics */}
                 {pet.tags && pet.tags.length > 0 && (
                   <div className="flex flex-col gap-1 mb-2">
-                    <span className="text-xs font-semibold text-[#FF1B1C] mb-1">
+                    <span
+                      className={`text-xs font-semibold mb-1 ${
+                        isDarkMode ? "text-yellow-400" : "text-[#FF1B1C]"
+                      }`}
+                    >
                       Characteristics
                     </span>
                     <div className="flex flex-wrap gap-2">
                       {pet.tags.slice(0, 3).map((tag, idx) => (
                         <span
                           key={idx}
-                          className="bg-[#BEB7A4]/20 text-[#7a7568] text-xs px-2 py-1 rounded-full"
+                          className={`text-xs px-2 py-1 rounded-full ${
+                            isDarkMode
+                              ? "bg-gray-700 text-gray-300"
+                              : "bg-[#BEB7A4]/20 text-[#7a7568]"
+                          }`}
                         >
                           {tag}
                         </span>
