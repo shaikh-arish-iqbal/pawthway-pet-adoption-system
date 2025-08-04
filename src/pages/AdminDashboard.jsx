@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+
 import {
   Home,
   Heart,
@@ -44,6 +45,7 @@ import { v4 as uuidv4 } from "uuid";
 import ShelterInfoForm from "./ShelterInfoForm";
 import MyFooter from "../components/Footer";
 import { toast } from "react-toastify";
+import ConversationsList from "../components/ConversationsList";
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -324,6 +326,7 @@ export default function AdminDashboard() {
             onClick={() => setActiveTab("applications")}
             active={activeTab === "applications"}
           />
+
           <SidebarButton
             icon={Mail}
             label="Messages"
@@ -369,7 +372,6 @@ export default function AdminDashboard() {
             <h1 className="text-4xl font-black text-[#FF1B1C] mb-8">
               Admin Dashboard
             </h1>
-
             {activeTab === "dashboard" && (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -407,7 +409,6 @@ export default function AdminDashboard() {
                 <div className="h-24" />
               </>
             )}
-
             {activeTab === "applications" && (
               <div className="space-y-6">
                 <h2 className="text-2xl font-bold text-[#FF1B1C] mb-4">
@@ -466,9 +467,7 @@ export default function AdminDashboard() {
                 )}
               </div>
             )}
-
             {activeTab === "add" && renderForm("Add New Pet", handleAddPet)}
-
             {activeTab === "edit" && !editingPet && (
               <div className="space-y-6">
                 <h2 className="text-2xl font-bold text-[#FF1B1C]">
@@ -518,11 +517,9 @@ export default function AdminDashboard() {
                 )}
               </div>
             )}
-
             {activeTab === "edit" &&
               editingPet &&
               renderForm("Edit Pet", handleUpdatePet)}
-
             {activeTab === "delete" && (
               <div className="space-y-6">
                 <h2 className="text-2xl font-bold text-[#FF1B1C]">
@@ -574,7 +571,6 @@ export default function AdminDashboard() {
                 )}
               </div>
             )}
-
             {activeTab === "shelter-info" && (
               <div className="space-y-6">
                 <ShelterInfoForm />
@@ -584,73 +580,12 @@ export default function AdminDashboard() {
             {activeTab === "messages" && (
               <div className="space-y-6">
                 <h2 className="text-2xl font-bold text-[#FF1B1C] mb-4">
-                  Contact Messages
+                  Message Center
                 </h2>
-                {messagesLoading ? (
-                  <div className="text-center py-8">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF7F11] mx-auto"></div>
-                  </div>
-                ) : messages.length === 0 ? (
-                  <div className="text-center text-[#7a7568]">
-                    No messages found.
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full bg-white rounded-xl shadow border border-[#BEB7A4]/30">
-                      <thead>
-                        <tr>
-                          <th className="px-4 py-2 text-left text-[#FF7F11]">
-                            Name
-                          </th>
-                          <th className="px-4 py-2 text-left text-[#FF7F11]">
-                            Email
-                          </th>
-                          <th className="px-4 py-2 text-left text-[#FF7F11]">
-                            Phone
-                          </th>
-                          <th className="px-4 py-2 text-left text-[#FF7F11]">
-                            Subject
-                          </th>
-                          <th className="px-4 py-2 text-left text-[#FF7F11]">
-                            Message
-                          </th>
-                          <th className="px-4 py-2 text-left text-[#FF7F11]">
-                            Date
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {messages.map((msg) => (
-                          <tr
-                            key={msg.id}
-                            className="border-t border-[#BEB7A4]/20"
-                          >
-                            <td className="px-4 py-2 text-black">{msg.name}</td>
-                            <td className="px-4 py-2 text-black">
-                              {msg.email}
-                            </td>
-                            <td className="px-4 py-2 text-black">
-                              {msg.phone}
-                            </td>
-                            <td className="px-4 py-2 text-black">
-                              {msg.subject}
-                            </td>
-                            <td className="px-4 py-2 max-w-xs text-black break-words">
-                              {msg.message}
-                            </td>
-                            <td className="px-4 py-2 text-xs text-black">
-                              {msg.createdAt?.seconds
-                                ? new Date(
-                                    msg.createdAt.seconds * 1000
-                                  ).toLocaleString()
-                                : ""}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                <ConversationsList
+                  userId={auth.currentUser?.uid}
+                  userType="shelter"
+                />
               </div>
             )}
           </motion.div>

@@ -7,6 +7,7 @@ import { getDownloadURL, ref } from "firebase/storage";
 import MyFooter from "../components/Footer";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { Heart } from "lucide-react";
+import ChatButton from "../components/ChatButton"; // Import ChatButton component
 
 const PetDetail = () => {
   const { id } = useParams();
@@ -17,6 +18,7 @@ const PetDetail = () => {
   const [imageUrls, setImageUrls] = useState([]);
   const [isFavourite, setIsFavourite] = useState(false);
   const [user, setUser] = useState(null);
+  const [shelterInfo, setShelterInfo] = useState(null); // Add shelter info state
 
   const auth = getAuth();
 
@@ -57,7 +59,6 @@ const PetDetail = () => {
     }
   };
 
-
   useEffect(() => {
     const fetchPet = async () => {
       try {
@@ -67,6 +68,19 @@ const PetDetail = () => {
 
         if (petSnap.exists()) {
           const petData = petSnap.data();
+
+          // Fetch shelter information
+          if (petData.shelterId) {
+            try {
+              const shelterRef = doc(db, "shelters", petData.shelterId);
+              const shelterSnap = await getDoc(shelterRef);
+              if (shelterSnap.exists()) {
+                setShelterInfo(shelterSnap.data());
+              }
+            } catch (error) {
+              console.error("Error fetching shelter info:", error);
+            }
+          }
 
           // Fetch image URLs from storage
           if (petData.imageUrls && petData.imageUrls.length > 0) {
@@ -320,26 +334,21 @@ const PetDetail = () => {
             )}
           </div>
 
-
-
           {/* Right Side - Details Section */}
           <div className="lg:w-1/2 flex flex-col h-96 lg:h-full overflow-hidden relative">
-
-
-          <div className="absolute top-4 right-4 z-20">
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={handleToggleFavourite}
-              className="bg-white/90 backdrop-blur-sm p-2 rounded-full shadow hover:bg-white transition"
-            >
-              {isFavourite ? (
-                <Heart className="text-[#FF1B1C] fill-[#FF1B1C]" />
-              ) : (
-                <Heart className="text-[#FF1B1C]" />
-              )}
-            </motion.button>
-          </div>
-
+            <div className="absolute top-4 right-4 z-20">
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={handleToggleFavourite}
+                className="bg-white/90 backdrop-blur-sm p-2 rounded-full shadow hover:bg-white transition"
+              >
+                {isFavourite ? (
+                  <Heart className="text-[#FF1B1C] fill-[#FF1B1C]" />
+                ) : (
+                  <Heart className="text-[#FF1B1C]" />
+                )}
+              </motion.button>
+            </div>
 
             <div className="flex-1 overflow-y-auto p-6 lg:p-8">
               {/* Header */}
@@ -363,6 +372,22 @@ const PetDetail = () => {
                     </>
                   )}
                 </div>
+                {/* Add Shelter Info */}
+                {shelterInfo && (
+                  <div className="bg-[#FFFFFC] rounded-lg p-3 border border-[#BEB7A4]/20 mb-4">
+                    <div className="text-xs text-[#7a7568] mb-1">
+                      From Shelter
+                    </div>
+                    <div className="font-semibold text-[#FF1B1C] text-sm">
+                      {shelterInfo.shelterName}
+                    </div>
+                    {shelterInfo.location && (
+                      <div className="text-xs text-[#7a7568]">
+                        📍 {shelterInfo.location}
+                      </div>
+                    )}
+                  </div>
+                )}
               </motion.div>
 
               {/* Key Details Grid */}
@@ -483,14 +508,28 @@ const PetDetail = () => {
                   </motion.svg>
                 </motion.button>
 
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => navigate("/Contact")}
-                  className="w-full bg-white text-[#FF1B1C] border-2 border-[#FF1B1C] py-3 rounded-xl font-bold text-base hover:bg-[#FF1B1C] hover:text-white transition-all duration-300"
-                >
-                  Contact About This Pet
-                </motion.button>
+                {/* Updated Action Buttons with Chat Integration */}
+                <div className="flex gap-2">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => navigate("/Contact")}
+                    className="flex-1 bg-white text-[#FF1B1C] border-2 border-[#FF1B1C] py-3 rounded-xl font-bold text-sm hover:bg-[#FF1B1C] hover:text-white transition-all duration-300"
+                  >
+                    Contact
+                  </motion.button>
+
+                  {/* Chat Button Integration */}
+                  {pet.shelterId && (
+                    <div className="flex-1">
+                      <ChatButton
+                        shelterId={pet.shelterId}
+                        petId={id}
+                        shelterName={shelterInfo?.shelterName || "Shelter"}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </motion.div>
           </div>
