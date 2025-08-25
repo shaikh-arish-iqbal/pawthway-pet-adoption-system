@@ -19,7 +19,7 @@ provider.setCustomParameters({
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: /*import.meta.env.VITE_FIREBASE_API_KEY*/"AIzaSyDapPb3KBmCN0Yl8pNd1MWccCpyYDbgrpE",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: "pawthway-fb57d.firebaseapp.com",
   projectId: "pawthway-fb57d",
   storageBucket: "pawthway-fb57d.firebasestorage.app",
