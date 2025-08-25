@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 import {
   Home,
@@ -21,6 +21,7 @@ import {
   X,
   CheckCircle,
   AlertCircle,
+  Menu,
 } from "lucide-react";
 import { storage, db, auth } from "../firebaseConfig";
 import {
@@ -69,6 +70,7 @@ export default function AdminDashboard() {
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [adoptionRequests, setAdoptionRequests] = useState([]);
   const [loadingRequests, setLoadingRequests] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // MOBILE: collapsible sidebar
 
   const navigate = useNavigate();
 
@@ -307,30 +309,61 @@ export default function AdminDashboard() {
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-[#FFFFFC] via-[#f8f7f4] to-[#BEB7A4]">
-      {/* Sidebar */}
+      {/* Mobile Sidebar Overlay */}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Sidebar (desktop static, mobile collapsible) */}
       <motion.aside
-        initial={{ x: -300 }}
-        animate={{ x: 0 }}
-        className="w-64 bg-black/90 backdrop-blur-xl text-white p-6 space-y-6 shadow-2xl"
+        className={`fixed lg:relative w-64 bg-black/90 backdrop-blur-xl text-white p-6 space-y-6 shadow-2xl z-50 h-full lg:h-auto overflow-y-auto transform transition-transform duration-300
+        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
       >
+        {/* Mobile-only header inside sidebar */}
+        <div className="flex items-center justify-between lg:hidden mb-2">
+          <h2 className="text-lg font-bold">Menu</h2>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="p-2 rounded-lg hover:bg-white/10"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
         <nav className="flex flex-col space-y-2">
           <SidebarButton
             icon={Home}
             label="Dashboard"
-            onClick={() => setActiveTab("dashboard")}
+            onClick={() => {
+              setActiveTab("dashboard");
+              setSidebarOpen(false);
+            }}
             active={activeTab === "dashboard"}
           />
           <SidebarButton
             icon={Heart}
             label="Adoption Requests"
-            onClick={() => setActiveTab("applications")}
+            onClick={() => {
+              setActiveTab("applications");
+              setSidebarOpen(false);
+            }}
             active={activeTab === "applications"}
           />
-
           <SidebarButton
             icon={Mail}
             label="Messages"
-            onClick={() => setActiveTab("messages")}
+            onClick={() => {
+              setActiveTab("messages");
+              setSidebarOpen(false);
+            }}
             active={activeTab === "messages"}
           />
           {/* <SidebarButton
@@ -348,13 +381,19 @@ export default function AdminDashboard() {
           <SidebarButton
             icon={FileText}
             label="Shelter Info"
-            onClick={() => setActiveTab("shelter-info")}
+            onClick={() => {
+              setActiveTab("shelter-info");
+              setSidebarOpen(false);
+            }}
             active={activeTab === "shelter-info"}
           />
           <SidebarButton
             icon={LogOut}
             label="Logout"
-            onClick={handleLogout}
+            onClick={() => {
+              handleLogout();
+              setSidebarOpen(false);
+            }}
             active={false}
             danger
           />
@@ -363,13 +402,30 @@ export default function AdminDashboard() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
+        {/* Mobile Header with hamburger (desktop hidden) */}
+        <div className="lg:hidden bg-white/90 backdrop-blur-xl shadow-md p-4 sticky top-0 z-30">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 hover:bg-gray-100 rounded-lg"
+              aria-label="Open menu"
+            >
+              <Menu size={24} className="text-[#FF1B1C]" />
+            </button>
+            <h1 className="text-lg font-bold text-[#FF1B1C]">
+              Admin Dashboard
+            </h1>
+            <div className="w-10" />
+          </div>
+        </div>
+
         <main className="flex-1 p-8 overflow-y-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="max-w-7xl mx-auto"
           >
-            <h1 className="text-4xl font-black text-[#FF1B1C] mb-8">
+            <h1 className="text-4xl font-black text-[#FF1B1C] mb-8 hidden lg:block">
               Admin Dashboard
             </h1>
             {activeTab === "dashboard" && (
