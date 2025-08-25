@@ -58,6 +58,7 @@ export default function Navbar({ onTabChange }) {
 
   const navItems = [
     { to: "/Adopt", label: "Adopt" },
+    { to: "/Blog", label: "Community" },
     { to: "/About", label: "About" },
     { to: "/Contact", label: "Contact" },
   ];

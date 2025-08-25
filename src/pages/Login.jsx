@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { auth, db } from "../firebaseConfig";
+import { auth, db, googleProvider } from "../firebaseConfig";
 import {
   signInWithEmailAndPassword,
   signInWithPopup,
-  GoogleAuthProvider,
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useNavigate, Link } from "react-router-dom";
@@ -24,8 +23,7 @@ export default function Login() {
     setError("");
 
     try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
 
       // Check if the user already exists in Firestore
@@ -43,7 +41,7 @@ export default function Login() {
       navigate("/"); // redirect to home page instead of /adopt
     } catch (err) {
       console.error("Google Sign-In Error:", err.message);
-      setError("Google sign-in failed. Please try again.");
+      setError("Google sign-in failed. Please try again: " + err.message);
     } finally {
       setLoading(false);
     }

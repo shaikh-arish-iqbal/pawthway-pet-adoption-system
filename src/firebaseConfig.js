@@ -7,6 +7,15 @@ import { getFirestore } from "firebase/firestore"; // ✅ Add this
 import { getStorage } from "firebase/storage";
 import { GoogleAuthProvider } from "firebase/auth";
 
+// Initialize Google Auth Provider
+const provider = new GoogleAuthProvider();
+// Add scopes for Google provider
+provider.addScope('https://www.googleapis.com/auth/userinfo.email');
+provider.addScope('https://www.googleapis.com/auth/userinfo.profile');
+provider.setCustomParameters({
+  prompt: 'select_account'
+});
+
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -25,3 +34,4 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 export const auth = getAuth(app);
+export const googleProvider = provider;

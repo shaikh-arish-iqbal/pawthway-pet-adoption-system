@@ -15,6 +15,8 @@ import AdoptionForm from "./pages/AdoptionForm";
 import FAQPage from "./pages/FAQPage";
 import UserDashboard from "./pages/UserDashboard";
 import Favourites from "./pages/Favourites";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { DarkModeProvider } from "./contexts/DarkModeContext";
@@ -40,6 +42,8 @@ function App() {
           <Route path="/user-profile" element={<UserProfile />} />
           <Route path="/user-dashboard" element={<UserDashboard />} />
           <Route path="/favourites" element={<Favourites />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:postId" element={<BlogPost />} />
         </Routes>
       </BrowserRouter>
     </DarkModeProvider>

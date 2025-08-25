@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { X, Home, Heart, User, LogOut, PawPrint } from "lucide-react";
+import { X, Home, Heart, User, LogOut, PawPrint, MessageSquare } from "lucide-react";
 import { auth, db } from "../firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
@@ -34,6 +34,8 @@ export default function Sidebar({ isOpen, onClose, onTabChange }) {
       navigate("/favourites")
     } else if (value === "profile") {
       navigate("/user-profile");
+    } else if (value === "blog") {
+      navigate("/blog");
     } else {
       onTabChange(value);
     }
@@ -44,6 +46,7 @@ export default function Sidebar({ isOpen, onClose, onTabChange }) {
     { label: "Dashboard", value: "dashboard", icon: <Home size={20} /> },
     { label: "My Adoptions", value: "myAdoptions", icon: <PawPrint size={20} /> },
     { label: "Favourites", value: "favourites", icon: <Heart size={20} /> },
+    { label: "Community", value: "blog", icon: <MessageSquare size={20} /> },
     { label: "Profile", value: "profile", icon: <User size={20} /> },
     { label: "Logout", value: "logout", icon: <LogOut size={20} /> },
   ];
