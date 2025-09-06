@@ -381,6 +381,9 @@ const PetDetail = () => {
                     <div className="font-semibold text-[#FF1B1C] text-sm">
                       {shelterInfo.shelterName}
                     </div>
+                    <div className="font-semibold text-[#FF1B1C] text-sm">
+                      {shelterInfo.contactPhone || "No number provided"}
+                    </div>
                     {shelterInfo.location && (
                       <div className="text-xs text-[#7a7568]">
                         📍 {shelterInfo.location}

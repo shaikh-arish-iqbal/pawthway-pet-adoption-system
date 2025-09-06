@@ -17,6 +17,7 @@ import UserDashboard from "./pages/UserDashboard";
 import Favourites from "./pages/Favourites";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
+import MyAdoptions from "./pages/MyAdoptions";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { DarkModeProvider } from "./contexts/DarkModeContext";
@@ -27,24 +28,28 @@ function App() {
       <ToastContainer position="bottom-right" />
       <BrowserRouter>
         <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/adopt" element={<Adopt />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/pet/:id" element={<PetDetail />} />
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
-          <Route path="/shelter-info" element={<ShelterInfoForm />} />
-          <Route path="/adoption-form/:id" element={<AdoptionForm />} />
-          <Route path="/faq" element={<FAQPage />} />
-          <Route path="/user-profile" element={<UserProfile />} />
-          <Route path="/user-dashboard" element={<UserDashboard />} />
-          <Route path="/favourites" element={<Favourites />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/blog/:postId" element={<BlogPost />} />
-        </Routes>
+        {/* 👇 This adds spacing below the fixed navbar */}
+        <main className="pt-24">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/adopt" element={<Adopt />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/pet/:id" element={<PetDetail />} />
+            <Route path="/admin-dashboard" element={<AdminDashboard />} />
+            <Route path="/shelter-info" element={<ShelterInfoForm />} />
+            <Route path="/adoption-form/:id" element={<AdoptionForm />} />
+            <Route path="/faq" element={<FAQPage />} />
+            <Route path="/user-profile" element={<UserProfile />} />
+            <Route path="/user-dashboard" element={<UserDashboard />} />
+            <Route path="/favourites" element={<Favourites />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:postId" element={<BlogPost />} />
+            <Route path="/my-adoptions" element={<MyAdoptions />} />
+          </Routes>
+        </main>
       </BrowserRouter>
     </DarkModeProvider>
   );

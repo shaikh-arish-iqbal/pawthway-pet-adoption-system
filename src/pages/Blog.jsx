@@ -121,6 +121,7 @@ const Blog = () => {
   };
 
   return (
+    <div>
     <div className={`min-h-screen ${isDarkMode ? "bg-gray-900 text-white" : "bg-beige text-gray-800"}`}>
       <div className="container mx-auto px-4 py-8">
         <motion.div
@@ -313,7 +314,9 @@ const Blog = () => {
           )}
         </motion.div>
       </div>
-      <Footer />
+     
+    </div>
+    <Footer />
     </div>
   );
 };
