@@ -168,17 +168,16 @@ export default function AdminDashboard() {
   };
 
   const handleAddPet = async () => {
-    // ADDED: Check for vaccineCertificateFile
+    // MODIFIED: Removed !vaccineCertificateFile check
     if (
       petImages.length === 0 ||
       !petName ||
       !description ||
       !breed ||
-      !personality ||
-      !vaccineCertificateFile // NEW: Check if certificate is uploaded
+      !personality
     ) {
       return toast.error(
-        "Please fill all required fields, select at least one image, and upload the vaccine certificate." // UPDATED message
+        "Please fill all required fields and select at least one image." // UPDATED message
       );
     }
 
@@ -186,6 +185,10 @@ export default function AdminDashboard() {
     setUploadProgress(0);
 
     try {
+      // Determine total uploads for progress calculation
+      const totalUploads = petImages.length + (vaccineCertificateFile ? 1 : 0);
+      let uploadedCount = 0;
+
       const imageUrls = [];
       for (let i = 0; i < petImages.length; i++) {
         const file = petImages[i];
@@ -193,16 +196,18 @@ export default function AdminDashboard() {
         await uploadBytes(imageRef, file);
         const url = await getDownloadURL(imageRef);
         imageUrls.push(url);
-        setUploadProgress(((i + 1) / (petImages.length + 1)) * 100); // Updated progress for images + cert
+        uploadedCount++;
+        setUploadProgress((uploadedCount / totalUploads) * 100); 
       }
       
-      // NEW: Upload Vaccine Certificate
+      // NEW: Upload Vaccine Certificate (Optional)
       let certUrl = "";
       if (vaccineCertificateFile) {
         const certRef = ref(storage, `vaccine_certificates/${uuidv4()}-${vaccineCertificateFile.name}`);
         await uploadBytes(certRef, vaccineCertificateFile);
         certUrl = await getDownloadURL(certRef);
-        setUploadProgress((petImages.length + 1) / (petImages.length + 1) * 100); // Final progress update
+        uploadedCount++;
+        setUploadProgress((uploadedCount / totalUploads) * 100); // Final progress update
       }
 
       await addDoc(collection(db, "pets"), {
@@ -218,7 +223,7 @@ export default function AdminDashboard() {
         personality,
         livingSituation,
         imageUrls,
-        vaccineCertificateUrl: certUrl, // NEW: Save certificate URL
+        vaccineCertificateUrl: certUrl, // Save certificate URL (can be empty)
         shelterId: auth.currentUser?.uid || null,
         createdAt: new Date(),
       });
@@ -298,7 +303,7 @@ export default function AdminDashboard() {
     setVaccineCertificateUrl(pet.vaccineCertificateUrl || ""); // NEW: Set existing URL
   };
 
-  // MODIFIED: to handle vaccine certificate update
+  // MODIFIED: to handle vaccine certificate update and remove mandatory check
   const handleUpdatePet = async () => {
     if (!editingPet) return;
 
@@ -306,6 +311,11 @@ export default function AdminDashboard() {
     setUploadProgress(0);
 
     try {
+      // Determine total uploads for progress calculation
+      const totalUploads = petImages.length + (vaccineCertificateFile ? 1 : 0);
+      let uploadedCount = 0;
+
+
       let updatedImageUrls = editingPet.imageUrls || [];
       if (petImages.length > 0) {
         updatedImageUrls = [];
@@ -315,28 +325,28 @@ export default function AdminDashboard() {
           await uploadBytes(imageRef, file);
           const url = await getDownloadURL(imageRef);
           updatedImageUrls.push(url);
+          uploadedCount++;
           // Update progress based on the total number of new files (images + cert)
-          const totalUploads = petImages.length + (vaccineCertificateFile ? 1 : 0);
-          setUploadProgress(((i + 1) / totalUploads) * 100);
+          setUploadProgress((uploadedCount / totalUploads) * 100);
         }
       }
 
       let certUrlToSave = vaccineCertificateUrl; // Start with existing URL
-      // NEW: Handle new Vaccine Certificate upload
+      // NEW: Handle new Vaccine Certificate upload (Optional)
       if (vaccineCertificateFile) {
         const certRef = ref(storage, `vaccine_certificates/${uuidv4()}-${vaccineCertificateFile.name}`);
         await uploadBytes(certRef, vaccineCertificateFile);
         certUrlToSave = await getDownloadURL(certRef);
+        uploadedCount++;
         // Update final progress if we uploaded a certificate
-        const totalUploads = petImages.length + 1;
-        setUploadProgress(totalUploads / totalUploads * 100);
+        setUploadProgress((uploadedCount / totalUploads) * 100);
       }
       
-      // Check if a certificate exists before updating, if we're adding/changing it
-      if (!certUrlToSave) {
-      	setLoading(false);
-      	return toast.error("Vaccine certificate is required.");
-      }
+      // REMOVED: Mandatory check for certificate
+      // if (!certUrlToSave) {
+      //   setLoading(false);
+      //   return toast.error("Vaccine certificate is required.");
+      // }
 
 
       await updateDoc(doc(db, "pets", editingPet.id), {
@@ -352,7 +362,7 @@ export default function AdminDashboard() {
         personality,
         livingSituation,
         imageUrls: updatedImageUrls,
-        vaccineCertificateUrl: certUrlToSave, // NEW: Save updated certificate URL
+        vaccineCertificateUrl: certUrlToSave, // Save updated certificate URL (can be empty)
         updatedAt: new Date(),
       });
 
@@ -373,17 +383,17 @@ export default function AdminDashboard() {
   
   // NEW FUNCTION: To handle vaccine certificate file change
   const handleVaccineCertificateChange = (e) => {
-  	const file = e.target.files[0];
-  	if (file) {
-  		setVaccineCertificateFile(file);
-  		setVaccineCertificateUrl(""); // Clear URL if a new file is selected
-  	}
+    const file = e.target.files[0];
+    if (file) {
+        setVaccineCertificateFile(file);
+        setVaccineCertificateUrl(""); // Clear URL if a new file is selected
+    }
   };
   
   // NEW FUNCTION: To clear the vaccine certificate
   const removeVaccineCertificate = () => {
-  	setVaccineCertificateFile(null);
-  	setVaccineCertificateUrl("");
+    setVaccineCertificateFile(null);
+    setVaccineCertificateUrl("");
   };
 
 
@@ -790,11 +800,10 @@ export default function AdminDashboard() {
           )}
         </div>
         
-        {/* NEW: Vaccine Certificate Upload Section */}
+        {/* NEW: Vaccine Certificate Upload Section (Now Optional) */}
         <div className="mb-8">
           <label className="block text-[#7a7568] font-semibold mb-3">
-            Vaccine Certificate *
-            {editingPet ? "(required for new, upload to replace)" : ""}
+            Vaccine Certificate (Optional)
           </label>
           
           {vaccineCertificateFile || vaccineCertificateUrl ? (
@@ -811,7 +820,7 @@ export default function AdminDashboard() {
                     rel="noopener noreferrer" 
                     className="text-blue-500 hover:text-blue-700 text-sm font-medium"
                   >
-                  	(Current File)
+                    (Current File)
                   </a>
                 )}
               </div>
@@ -823,19 +832,19 @@ export default function AdminDashboard() {
               </button>
             </div>
           ) : (
-          	<div className="border-2 border-dashed border-[#BEB7A4] rounded-xl p-6 text-center">
-            	<input
-              		type="file"
-              		accept=".pdf,image/*"
-              		onChange={handleVaccineCertificateChange} // NEW handler
-              		className="hidden"
-              		id="certificate-upload"
-            	/>
-            	<label htmlFor="certificate-upload" className="cursor-pointer">
-              		<Paperclip className="w-12 h-12 text-[#BEB7A4] mx-auto mb-4" />
-              		<p className="text-[#7a7568]">Click to upload a PDF or Image certificate</p>
-            	</label>
-          	</div>
+            <div className="border-2 border-dashed border-[#BEB7A4] rounded-xl p-6 text-center">
+                <input
+                    type="file"
+                    accept=".pdf,image/*"
+                    onChange={handleVaccineCertificateChange} // NEW handler
+                    className="hidden"
+                    id="certificate-upload"
+                />
+                <label htmlFor="certificate-upload" className="cursor-pointer">
+                    <Paperclip className="w-12 h-12 text-[#BEB7A4] mx-auto mb-4" />
+                    <p className="text-[#7a7568]">Click to upload a PDF or Image certificate</p>
+                </label>
+            </div>
           )}
         </div>
 
