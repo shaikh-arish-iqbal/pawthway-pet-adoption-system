@@ -665,15 +665,41 @@ const AdoptionForm = () => {
               </motion.div>
             )}
 
-            <div className="mt-8 text-center">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                type="submit"
-                className="bg-[#FF7F11] text-white px-6 py-3 rounded-full font-semibold hover:bg-[#e56e0e] transition-colors"
-              >
-                Submit Application
-              </motion.button>
+            <div className="mt-8 flex items-center justify-between">
+              {currentStep > 1 ? (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  type="button"
+                  onClick={prevStep}
+                  className="bg-white text-[#FF7F11] border-2 border-[#FF7F11] px-6 py-3 rounded-full font-semibold hover:bg-[#fff3ea] transition-colors"
+                >
+                  Back
+                </motion.button>
+              ) : (
+                <div />
+              )}
+
+              {currentStep < 4 ? (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  type="button"
+                  onClick={nextStep}
+                  className="bg-[#FF7F11] text-white px-6 py-3 rounded-full font-semibold hover:bg-[#e56e0e] transition-colors"
+                >
+                  Next
+                </motion.button>
+              ) : (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  type="submit"
+                  className="bg-[#FF7F11] text-white px-6 py-3 rounded-full font-semibold hover:bg-[#e56e0e] transition-colors"
+                >
+                  Submit Application
+                </motion.button>
+              )}
             </div>
           </form>
         </motion.div>
